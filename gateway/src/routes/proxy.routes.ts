@@ -1,4 +1,3 @@
-// src/routes/proxy.routes.ts
 import { Router } from "express";
 import expressProxy from "express-http-proxy";
 import { services } from "../config/services";
