@@ -1,13 +1,33 @@
 import { Request, Response, NextFunction } from 'express';
 
+export class AppError extends Error {
+  public statusCode: number;
+  public isOperational: boolean;
+
+  constructor(message: string, statusCode = 500, isOperational = true) {
+    super(message);
+    this.statusCode = statusCode;
+    this.isOperational = isOperational;
+    Error.captureStackTrace(this);
+  }
+}
+
 export const globalErrorHandler = (
-  err: Error,
+  err: Error | AppError,
   _req: Request,
   res: Response,
   _next: NextFunction
 ) => {
-  res.status(500).json({
+  const statusCode = (err as AppError).statusCode || 500;
+  const message = err.message || 'Something went wrong';
+
+  res.status(statusCode).json({
     success: false,
-    message: err.message || 'Something went wrong'
+    message
   });
 };
+
+// use of app AppError in controller
+// throw new AppError('Something went wrong', 500);
+// use of globalErrorHandler in app
+// app.use(globalErrorHandler);
