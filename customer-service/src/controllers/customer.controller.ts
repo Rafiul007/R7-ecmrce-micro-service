@@ -1,8 +1,20 @@
-import { Request, Response } from 'express';
+import { NextFunction, Request, Response } from 'express';
 import { Customer } from '../models/customerModel';
 import { asyncHandler } from '../utils/async-handler';
 import { AppError } from '../utils/error-handler';
 import { responseHandler } from '../utils/response-handler';
+
+// Get customer service status
+export const getCustomerServiceStatus = asyncHandler(
+  async (req: Request, res: Response, next: NextFunction) => {
+    responseHandler(res, {
+      statusCode: 200,
+      success: true,
+      message: 'Customer service is running',
+      data: {}
+    });
+  }
+);
 
 // Create customer profile
 export const createCustomerProfile = asyncHandler(async (req: Request, res: Response) => {
@@ -54,3 +66,7 @@ export const getMyCustomerProfile = asyncHandler(async (req: Request, res: Respo
     data: customer
   });
 });
+
+// TODO: Update customer profile
+// TODO: Delete customer profile
+// TODO: Admin - Get all customer profiles

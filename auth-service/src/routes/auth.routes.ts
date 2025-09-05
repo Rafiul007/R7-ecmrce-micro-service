@@ -12,13 +12,13 @@ import { validateRequest } from '../middlewares/validateRequest';
 const router = Router();
 
 /**
- * @route   GET /api/status
+ * @route   GET /status
  * @desc    Check if auth service is up
  */
 router.get('/status', getAuthStatus);
 
 /**
- * @route   POST /api/signup
+ * @route   POST /signup
  * @desc    Register new user
  */
 router.post(
@@ -32,7 +32,7 @@ router.post(
 );
 
 /**
- * @route   POST /api/login
+ * @route   POST /login
  * @desc    Login existing user
  */
 router.post(
@@ -46,13 +46,13 @@ router.post(
 );
 
 /**
- * @route   POST /api/logout
+ * @route   POST /logout
  * @desc    Logout user
  */
 router.post('/logout', logoutUser);
 
 /**
- * @route   GET /api/user/:id
+ * @route   GET /user/:id
  * @desc    Get user info by ID
  */
 router.get(
