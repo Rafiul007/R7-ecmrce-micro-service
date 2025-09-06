@@ -4,6 +4,7 @@
   "workspaces": [
     "auth-service",
     "customer-service",
+    "category-service",
     "gateway"
   ],
   "devDependencies": {
@@ -13,9 +14,8 @@
     "dev": "yarn workspaces foreach --parallel --topological-dev run dev",
     "build": "yarn workspaces foreach --topological run build",
     "start": "yarn workspaces foreach --parallel --topological run start",
-
-    "dev:all": "concurrently -n gateway,auth,customer -c auto \"yarn workspace gateway dev\" \"yarn workspace auth-service dev\" \"yarn workspace customer-service dev\"",
-    "start:all": "concurrently -n gateway,auth,customer -c auto \"yarn workspace gateway start\" \"yarn workspace auth-service start\" \"yarn workspace customer-service start\"",
-    "build:all": "concurrently -n gateway,auth,customer -c auto \"yarn workspace gateway build\" \"yarn workspace auth-service build\" \"yarn workspace customer-service build\""
+    "dev:all": "concurrently -n gateway,auth,customer,category -c auto \"yarn workspace gateway dev\" \"yarn workspace auth-service dev\" \"yarn workspace customer-service dev\" \"yarn workspace category-service dev\"",
+    "start:all": "concurrently -n gateway,auth,customer,category -c auto \"yarn workspace gateway start\" \"yarn workspace auth-service start\" \"yarn workspace customer-service start\" \"yarn workspace category-service start\"",
+    "build:all": "concurrently -n gateway,auth,customer,category -c auto \"yarn workspace gateway build\" \"yarn workspace auth-service build\" \"yarn workspace customer-service build\" \"yarn workspace category-service build\""
   }
 }
