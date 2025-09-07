@@ -94,3 +94,113 @@ export const toggleActive = asyncHandler(async (req: Request, res: Response) => 
     data: category
   });
 });
+
+/**
+ * GET /category
+ * Query:
+ *  - search?: string                (regex on name/slug)
+ *  - parent?: string | 'null'       (ObjectId to filter by parent, or 'null' for root)
+ *  - active?: 'true' | 'false'      (filter by isActive)
+ *  - page?: number                  (default 1)
+ *  - limit?: number                 (default 20, max 100)
+ *  - sortBy?: 'createdAt'|'updatedAt'|'name'   (default 'createdAt')
+ *  - sortOrder?: 'asc'|'desc'|'1'|'-1'         (default 'desc')
+ *  - fields?: comma list of fields  (whitelist)
+ *  - include?: 'childrenCount'      (adds childrenCount per item)
+ */
+export const listCategories = asyncHandler(async (req: Request, res: Response) => {
+  const page = Math.max(1, Number(req.query.page ?? 1));
+  const limit = Math.min(100, Math.max(1, Number(req.query.limit ?? 20)));
+  const skip = (page - 1) * limit;
+
+  const { search, parent, active, sortBy, sortOrder, fields, include } = req.query as Record<
+    string,
+    string
+  >;
+
+  // Build filters
+  const filter: Record<string, any> = {};
+  if (typeof active !== 'undefined') {
+    filter.isActive = String(active).toLowerCase() === 'true';
+  }
+
+  if (typeof parent !== 'undefined') {
+    // parent='null' or 'root' means top-level
+    if (parent === 'null' || parent === 'root' || parent === '') {
+      filter.parent = null;
+    } else {
+      if (!mongoose.isValidObjectId(parent)) throw new AppError('Invalid parent id', 400);
+      filter.parent = new mongoose.Types.ObjectId(parent);
+    }
+  }
+
+  if (search) {
+    const s = String(search).trim();
+    filter.$or = [{ name: { $regex: s, $options: 'i' } }, { slug: { $regex: s, $options: 'i' } }];
+  }
+
+  // Sorting
+  const allowedSort = new Set(['createdAt', 'updatedAt', 'name']);
+  const sortField = allowedSort.has(String(sortBy)) ? String(sortBy) : 'createdAt';
+  const dir = String(sortOrder).toLowerCase() === 'asc' || String(sortOrder) === '1' ? 1 : -1;
+  const sort: Record<string, 1 | -1> = { [sortField]: dir };
+
+  // Field selection (whitelist to stay safe)
+  const allowedFields = new Set([
+    '_id',
+    'name',
+    'slug',
+    'description',
+    'parent',
+    'isActive',
+    'createdBy',
+    'updatedBy',
+    'createdAt',
+    'updatedAt'
+  ]);
+  let projection: Record<string, 1> | undefined;
+  if (fields) {
+    const pick = String(fields)
+      .split(',')
+      .map((f) => f.trim())
+      .filter((f) => allowedFields.has(f));
+    if (pick.length) {
+      projection = {};
+      pick.forEach((f) => (projection![f] = 1));
+    }
+  }
+
+  // Query + count
+  const [items, total] = await Promise.all([
+    Category.find(filter, projection).sort(sort).skip(skip).limit(limit).lean(),
+    Category.countDocuments(filter)
+  ]);
+
+  // Optional include: childrenCount
+  if (include && include.split(',').includes('childrenCount')) {
+    const ids = items.map((i: any) => i._id);
+    const counts = await Category.aggregate<{ _id: mongoose.Types.ObjectId; count: number }>([
+      { $match: { parent: { $in: ids as any[] } } },
+      { $group: { _id: '$parent', count: { $sum: 1 } } }
+    ]);
+    const map = new Map(counts.map((c) => [String(c._id), c.count]));
+    (items as any[]).forEach((i) => {
+      (i as any).childrenCount = map.get(String(i._id)) || 0;
+    });
+  }
+
+  responseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Categories fetched',
+    data: {
+      categories: items,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit)
+      }
+    }
+  });
+});

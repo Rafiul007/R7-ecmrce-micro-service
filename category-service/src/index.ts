@@ -21,7 +21,7 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', (_req, res) => res.send('category-service is running ✅'));
+app.get('/test', (_req, res) => res.send('category-service is running ✅'));
 app.use('/', customerRoutes);
 app.use(globalErrorHandler);
 

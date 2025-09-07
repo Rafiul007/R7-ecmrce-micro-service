@@ -1,6 +1,11 @@
 import { Router } from 'express';
-import { body } from 'express-validator';
-import { createCategory } from '../controllers/category.controller';
+import { body, param, query } from 'express-validator';
+import {
+  createCategory,
+  getCategoryById,
+  listCategories,
+  toggleActive
+} from '../controllers/category.controller';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
 import { validateRequest } from '../middlewares/validateRequest';
 
@@ -34,4 +39,50 @@ router.post(
   createCategory
 );
 
+/**
+ * GET /category
+ * Query:
+ *  - search?: string
+ *  - parent?: string | 'null' | 'root'
+ *  - active?: 'true' | 'false'
+ *  - page?: number
+ *  - limit?: number (<=100)
+ *  - sortBy?: 'createdAt'|'updatedAt'|'name'
+ *  - sortOrder?: 'asc'|'desc'|'1'|'-1'
+ *  - fields?: comma-separated whitelist
+ *  - include?: 'childrenCount'
+ */
+router.get(
+  '/',
+  [
+    query('page').optional().isInt({ min: 1 }).withMessage('page must be a positive integer'),
+    query('limit').optional().isInt({ min: 1, max: 100 }).withMessage('limit 1-100'),
+    query('active').optional().isBoolean().withMessage('active must be boolean'),
+    query('parent').optional().isString(),
+    query('search').optional().isString().isLength({ max: 120 }).withMessage('search too long'),
+    query('sortBy').optional().isIn(['createdAt', 'updatedAt', 'name']),
+    query('sortOrder').optional().isIn(['asc', 'desc', '1', '-1']),
+    query('fields').optional().isString(),
+    query('include').optional().isString()
+  ],
+  validateRequest,
+  listCategories
+);
+
+/** GET /category/:id (public) */
+router.get(
+  '/:id',
+  [param('id').isMongoId().withMessage('Invalid id')],
+  validateRequest,
+  getCategoryById
+);
+
+/** PATCH /category/:id/toggle-active (auth) */
+router.patch(
+  '/:id/toggle-active',
+  isAuthenticated,
+  [param('id').isMongoId().withMessage('Invalid id')],
+  validateRequest,
+  toggleActive
+);
 export default router;
