@@ -40,7 +40,7 @@ router.post(
 );
 
 /**
- * GET /category
+ * GET /category (public)
  * Query:
  *  - search?: string
  *  - parent?: string | 'null' | 'root'
