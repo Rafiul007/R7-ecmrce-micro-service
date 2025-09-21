@@ -11,5 +11,5 @@ export const services = {
   auth: requireEnv("AUTH_SERVICE_URL"),
   customer: requireEnv("CUSTOMER_SERVICE_URL"),
   category: requireEnv("CATEGORY_SERVICE_URL"),
-  // product: requireEnv("PRODUCT_SERVICE_URL"),
+  product: requireEnv("PRODUCT_SERVICE_URL"),
 };
