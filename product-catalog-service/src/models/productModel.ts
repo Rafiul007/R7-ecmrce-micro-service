@@ -55,13 +55,13 @@ const ProductSchema = new Schema<IProduct>(
     sku: { type: String, unique: true, sparse: true, trim: true },
     stock: { type: Number, required: true, min: 0 },
 
-    category: { type: Schema.Types.ObjectId, required: true },
+    category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
 
     images: [{ type: String }],
     variants: [VariantSchema],
     isActive: { type: Boolean, default: true },
-    createdBy: { type: Schema.Types.ObjectId, default: null },
-    updatedBy: { type: Schema.Types.ObjectId, default: null },
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    updatedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     metaTitle: { type: String, maxlength: 60 },
     metaDescription: { type: String, maxlength: 160 },
     tags: [{ type: String, trim: true }]
@@ -69,7 +69,6 @@ const ProductSchema = new Schema<IProduct>(
   { timestamps: true }
 );
 
-// Indexes
 ProductSchema.index({ category: 1, name: 1 }, { unique: true });
 ProductSchema.index({ tags: 1 });
 

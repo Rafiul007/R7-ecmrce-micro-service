@@ -1,5 +1,5 @@
 {
-  "name": "category-service",
+  "name": "product-catalog-service",
   "version": "1.0.0",
   "main": "index.js",
   "license": "MIT",

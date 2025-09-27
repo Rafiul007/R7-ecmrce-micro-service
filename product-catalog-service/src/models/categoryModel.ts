@@ -17,8 +17,8 @@ const CategorySchema = new Schema<ICategory>(
     description: { type: String, maxlength: 1000 },
     parent: { type: Schema.Types.ObjectId, ref: 'Category', default: null },
     isActive: { type: Boolean, default: true },
-    createdBy: { type: Schema.Types.ObjectId, default: null },
-    updatedBy: { type: Schema.Types.ObjectId, default: null }
+    createdBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    updatedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null }
   },
   { timestamps: true }
 );
