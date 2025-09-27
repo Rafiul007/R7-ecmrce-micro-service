@@ -8,6 +8,11 @@ import {
   getUser
 } from '../controllers/auth.controller';
 import { validateRequest } from '../middlewares/validateRequest';
+import {
+  loginValidation,
+  signupValidation,
+  userIdValidation
+} from '../validation/auth.validations';
 
 const router = Router();
 
@@ -21,29 +26,13 @@ router.get('/status', getAuthStatus);
  * @route   POST /signup
  * @desc    Register new user
  */
-router.post(
-  '/signup',
-  [
-    body('email').isEmail().withMessage('Valid email is required'),
-    body('password').isLength({ min: 6 }).withMessage('Password must be at least 6 characters long')
-  ],
-  validateRequest,
-  signUpUser
-);
+router.post('/signup', signupValidation, validateRequest, signUpUser);
 
 /**
  * @route   POST /login
  * @desc    Login existing user
  */
-router.post(
-  '/login',
-  [
-    body('email').isEmail().withMessage('Valid email is required'),
-    body('password').notEmpty().withMessage('Password is required')
-  ],
-  validateRequest,
-  loginUser
-);
+router.post('/login', loginValidation, validateRequest, loginUser);
 
 /**
  * @route   POST /logout
@@ -55,11 +44,6 @@ router.post('/logout', logoutUser);
  * @route   GET /user/:id
  * @desc    Get user info by ID
  */
-router.get(
-  '/user/:id',
-  [param('id').isMongoId().withMessage('Valid MongoDB user ID is required')],
-  validateRequest,
-  getUser
-);
+router.get('/user/:id', userIdValidation, validateRequest, getUser);
 
 export default router;
