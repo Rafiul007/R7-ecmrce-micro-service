@@ -3,9 +3,8 @@ import dotenv from 'dotenv';
 import cors from 'cors';
 import { connectDB } from './config/db';
 import { globalErrorHandler } from './utils/error-handler';
-import { getAuthStatus } from './controllers/auth.controller';
-import authRoutes from './routes/auth.routes';
 import morgan from 'morgan';
+import customerRoutes from './routes/customer.routes';
 dotenv.config();
 connectDB();
 
@@ -24,13 +23,15 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-app.get('/', getAuthStatus);
+// app.get('/', getAuthStatus);
 
-app.use('/', authRoutes);
+// app.use('/', authRoutes);
 
 app.use(globalErrorHandler);
 
+app.use('/api/customer', customerRoutes);
+
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
-  console.log(`✅ Auth Service running on port ${PORT}`);
+  console.log(`✅ IAM running on port ${PORT}`);
 });
