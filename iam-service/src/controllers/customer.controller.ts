@@ -1,150 +1,38 @@
-import { responseHandler } from '../utils/response-handler';
+import { CustomerProfile } from '../models/customerModel';
+import { User } from '../models/userModel';
 import { asyncHandler } from '../utils/async-handler';
-import { UserRole } from '../models/userModel';
-import { Customer, ICustomer } from '../models/customerModel';
 import { AppError } from '../utils/error-handler';
-import mongoose from 'mongoose';
-import { Response } from 'express-serve-static-core';
-import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
-import { setRefreshTokenCookie } from '../utils/cookies';
-import bcrypt from 'bcryptjs';
-import { Employee, EmployeeType } from '../models/employeeModel';
+import { responseHandler } from '../utils/response-handler';
+import { Request, Response, NextFunction } from 'express';
 
-export const registerCustomer = asyncHandler(async (req, res) => {
-  const { fullName, email, password, phone, address, customerType } = req.body;
+export const createCustomerProfile = asyncHandler(async (req: Request, res: Response) => {
+  const { email, address, customerType, gender, dateOfBirth } = req.body;
 
-  if (!fullName || !email || !password || !phone || !address || !customerType) {
-    throw new AppError('Missing required fields', 400);
-  }
-  if (!address.street || !address.city || !address.country) {
-    throw new AppError('Address must include street, city, and country', 400);
+  const user = await User.findOne({ email });
+  if (!user) throw new AppError('User not found', 404);
+
+  const userId = user._id;
+
+  if (!address || !address.street || !address.city || !address.country) {
+    throw new AppError('Incomplete address fields', 400);
   }
 
-  const passwordHash = await bcrypt.hash(password, 12);
+  const exists = await CustomerProfile.findOne({ userId });
+  if (exists) throw new AppError('Customer profile already exists', 400);
 
-  const session = await mongoose.startSession();
-  let customer;
+  const profile = await CustomerProfile.create({
+    userId,
+    address,
+    customerType,
+    gender,
+    dateOfBirth,
+    createdBy: userId
+  });
 
-  try {
-    await session.withTransaction(async () => {
-      const [created] = await Customer.create(
-        [
-          {
-            fullName,
-            email,
-            password: passwordHash,
-            phone,
-            role: UserRole.CUSTOMER,
-            address,
-            customerType
-          }
-        ],
-        { session }
-      );
-
-      customer = created;
-
-      const payload = {
-        id: created._id.toString(),
-        email: created.email,
-        role: created.role
-      };
-
-      const accessToken = generateAccessToken(payload);
-      const refreshToken = generateRefreshToken(payload);
-
-      setRefreshTokenCookie(res, refreshToken);
-
-      responseHandler(res, {
-        statusCode: 201,
-        success: true,
-        message: 'Customer registered successfully',
-        data: {
-          accessToken,
-          user: {
-            id: created._id,
-            fullName: created.fullName,
-            email: created.email,
-            role: created.role
-          },
-          profile: created
-        }
-      });
-    });
-  } finally {
-    session.endSession();
-  }
-});
-
-export const registerEmployee = asyncHandler(async (req, res) => {
-  const { fullName, email, password, phone, employeeType, department, supervisor, salary } =
-    req.body;
-
-  if (!fullName || !email || !password || !phone || !employeeType) {
-    throw new AppError('Missing required fields', 400);
-  }
-
-  if (!Object.values(EmployeeType).includes(employeeType)) {
-    throw new AppError(
-      `Invalid employeeType. Allowed: ${Object.values(EmployeeType).join(', ')}`,
-      400
-    );
-  }
-
-  const passwordHash = await bcrypt.hash(password, 12);
-
-  const session = await mongoose.startSession();
-  let employee;
-
-  try {
-    await session.withTransaction(async () => {
-      const [created] = await Employee.create(
-        [
-          {
-            fullName,
-            email,
-            password: passwordHash,
-            phone,
-            role: UserRole.EMPLOYEE,
-            employeeType,
-            department,
-            supervisor,
-            salary
-          }
-        ],
-        { session }
-      );
-
-      employee = created;
-
-      const payload = {
-        id: created._id.toString(),
-        email: created.email,
-        role: created.role
-      };
-
-      const accessToken = generateAccessToken(payload);
-      const refreshToken = generateRefreshToken(payload);
-
-      setRefreshTokenCookie(res, refreshToken);
-
-      responseHandler(res, {
-        statusCode: 201,
-        success: true,
-        message: 'Employee registered successfully',
-        data: {
-          accessToken,
-          user: {
-            id: created._id,
-            fullName: created.fullName,
-            email: created.email,
-            role: created.role
-          },
-          profile: created
-        }
-      });
-    });
-  } finally {
-    session.endSession();
-  }
+  responseHandler(res, {
+    statusCode: 201,
+    success: true,
+    message: 'Customer profile created',
+    data: profile
+  });
 });

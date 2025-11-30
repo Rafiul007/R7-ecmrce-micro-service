@@ -1,94 +1,107 @@
-// import { Request, Response, NextFunction } from 'express';
-// import bcrypt from 'bcryptjs';
-// import { responseHandler } from '../utils/response-handler';
-// import { asyncHandler } from '../utils/async-handler';
-// import { User } from '../models/userModel';
-// import { AppError } from '../utils/error-handler';
-// import { generateAccessToken, generateRefreshToken } from '../utils/jwt';
-// import { clearRefreshTokenCookie, setRefreshTokenCookie } from '../utils/cookies';
+import bcrypt from 'bcryptjs';
+import { asyncHandler } from '../utils/async-handler';
+import { AppError } from '../utils/error-handler';
+import { responseHandler } from '../utils/response-handler';
+import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../utils/jwt';
+import {
+  setRefreshTokenCookie,
+  clearRefreshTokenCookie,
+  getRefreshTokenFromCookie
+} from '../utils/cookies';
+import { User } from '../models/userModel';
 
-// /**
-//  * Auth Controller
-//  * Handles user authentication operations like
-//  * sign up, login, logout, and fetching user details.
-//  */
+export const registerUser = asyncHandler(async (req, res) => {
+  const { fullName, email, password, phone, roles } = req.body;
 
-// // Get Auth Status
-// export const getAuthStatus = asyncHandler(
-//   async (req: Request, res: Response, next: NextFunction) => {
-//     responseHandler(res, {
-//       statusCode: 200,
-//       success: true,
-//       message: 'Auth service is running',
-//       data: {}
-//     });
-//   }
-// );
+  if (!fullName || !email || !password) {
+    throw new AppError('Missing required fields', 400);
+  }
 
-// //  Sign Up User
-// export const signUpUser = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-//   const { email, password } = req.body;
+  const exists = await User.findOne({ email });
+  if (exists) throw new AppError('Email already registered', 400);
 
-//   const existingUser = await User.findOne({ email });
+  const passwordHash = await bcrypt.hash(password, 12);
 
-//   if (existingUser) throw new AppError('User already exists', 400);
+  const user = await User.create({
+    fullName,
+    email,
+    password: passwordHash,
+    phone,
+    roles: roles || ['user']
+  });
 
-//   const hashedPassword = await bcrypt.hash(password, 12);
-//   const newUser = await User.create({
-//     email,
-//     password: hashedPassword
-//   });
+  const payload = {
+    id: user._id.toString(),
+    email: user.email,
+    role: user.roles[0]
+  };
 
-//   responseHandler(res, {
-//     statusCode: 201,
-//     success: true,
-//     message: 'User created successfully',
-//     data: { userId: newUser._id, email: newUser.email }
-//   });
-// });
+  const accessToken = generateAccessToken(payload);
+  const refreshToken = generateRefreshToken(payload);
 
-// // Login User
-// export const loginUser = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-//   const { email, password } = req.body;
-//   const user = await User.findOne({ email });
-//   if (!user) throw new AppError('Invalid email or password', 401);
+  setRefreshTokenCookie(res, refreshToken);
 
-//   const isPasswordValid = await bcrypt.compare(password, user.password);
-//   if (!isPasswordValid) throw new AppError('Invalid email or password', 401);
+  responseHandler(res, {
+    statusCode: 201,
+    success: true,
+    message: 'User registered',
+    data: { accessToken, user }
+  });
+});
 
-//   const accessToken = generateAccessToken({ id: user._id.toString(), email: user.email });
-//   const refreshToken = generateRefreshToken({ id: user._id.toString(), email: user.email });
+export const login = asyncHandler(async (req, res) => {
+  const { email, password } = req.body;
 
-//   setRefreshTokenCookie(res, refreshToken);
+  const user = await User.findOne({ email });
+  if (!user) throw new AppError('Invalid credentials', 401);
 
-//   responseHandler(res, {
-//     statusCode: 200,
-//     success: true,
-//     message: 'User logged in successfully',
-//     data: { accessToken }
-//   });
-// });
+  const match = await bcrypt.compare(password, user.password);
+  if (!match) throw new AppError('Invalid credentials', 401);
 
-// // Logout User
-// export const logoutUser = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-//   clearRefreshTokenCookie(res);
-//   responseHandler(res, {
-//     statusCode: 200,
-//     success: true,
-//     message: 'User logged out successfully',
-//     data: {}
-//   });
-// });
+  const payload = {
+    id: user._id.toString(),
+    email: user.email,
+    role: user.roles[0]
+  };
 
-// // Get User Information
-// export const getUser = asyncHandler(async (req: Request, res: Response, next: NextFunction) => {
-//   const userId = req.params.id;
-//   const user = await User.findById(userId).select('-password');
-//   if (!user) throw new AppError('User not found', 404);
-//   responseHandler(res, {
-//     statusCode: 200,
-//     success: true,
-//     message: 'User fetched successfully',
-//     data: { userId: user._id, email: user.email }
-//   });
-// });
+  const accessToken = generateAccessToken(payload);
+  const refreshToken = generateRefreshToken(payload);
+
+  setRefreshTokenCookie(res, refreshToken);
+
+  responseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Logged in',
+    data: { accessToken, user }
+  });
+});
+
+export const refresh = asyncHandler(async (req, res) => {
+  const token = getRefreshTokenFromCookie(req);
+  if (!token) throw new AppError('Refresh token missing', 401);
+
+  const payload = verifyRefreshToken(token);
+
+  const newAccess = generateAccessToken(payload);
+  const newRefresh = generateRefreshToken(payload);
+
+  setRefreshTokenCookie(res, newRefresh);
+
+  responseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Token refreshed',
+    data: { accessToken: newAccess }
+  });
+});
+
+export const logout = asyncHandler(async (req, res) => {
+  clearRefreshTokenCookie(res);
+
+  responseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Logged out'
+  });
+});

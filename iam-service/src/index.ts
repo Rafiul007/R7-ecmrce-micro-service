@@ -5,6 +5,8 @@ import { connectDB } from './config/db';
 import { globalErrorHandler } from './utils/error-handler';
 import morgan from 'morgan';
 import customerRoutes from './routes/customer.routes';
+import employeeRoutes from './routes/employee.routes';
+import authRoutes from './routes/auth.routes';
 dotenv.config();
 connectDB();
 
@@ -27,10 +29,11 @@ app.use(express.urlencoded({ extended: true }));
 
 // app.use('/', authRoutes);
 
-app.use(globalErrorHandler);
-
+app.use('/api/auth', authRoutes);
 app.use('/api/customer', customerRoutes);
+app.use('/api/staff', employeeRoutes);
 
+app.use(globalErrorHandler);
 const PORT = process.env.PORT || 5001;
 app.listen(PORT, () => {
   console.log(`✅ IAM running on port ${PORT}`);
