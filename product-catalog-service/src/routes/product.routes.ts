@@ -8,6 +8,7 @@ import {
 } from '../controllers/product.controller';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
 import { validateRequest } from '../middlewares/validateRequest';
+import { requirePermission } from '../middlewares/requirePermission';
 
 const router = Router();
 
@@ -51,7 +52,7 @@ const router = Router();
 
 /** POST /api/products */
 router.post(
-  '/',
+  '/create',
   isAuthenticated,
   [
     body('name')
@@ -74,6 +75,7 @@ router.post(
     body('tags').optional().isArray()
   ],
   validateRequest,
+  requirePermission('product:create' ),
   createProduct
 );
 
