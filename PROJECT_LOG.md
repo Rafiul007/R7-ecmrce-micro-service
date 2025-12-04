@@ -1,4 +1,4 @@
-##11/30/2025
+## 11/30/2025
 
 - starting with IAM service.
 - last time work with customer registration and employee registration.
@@ -8,7 +8,7 @@
 - Now I have planned to make a user registration and authetication api. A register user can create profile for customer/eployee.
 - For employee, only admin can create.
 
-###12:30
+### 12:30
 
 - customer registration perfect.
 - But needs refactoring in customer controller, and routes.
@@ -38,3 +38,5 @@ PUT     /api/employee/:id/leave/:leaveId/approve
 
 
 ## new controller for employee list and employe with ID
+
+## change in JWT: role added

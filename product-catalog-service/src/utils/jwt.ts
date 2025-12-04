@@ -12,6 +12,7 @@ if (!accessTokenSecret || !refreshTokenSecret) {
 }
 
 export interface ITokenPayload {
+  role: string;
   id: string;
   email: string;
 }
