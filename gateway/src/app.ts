@@ -1,6 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
 import dotenv from "dotenv";
-import expressProxy from "express-http-proxy";
 import proxyRoutes from "./routes/proxy.routes";
 const app = express();
 dotenv.config();

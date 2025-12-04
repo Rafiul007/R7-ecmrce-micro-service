@@ -2,8 +2,7 @@
   "name": "r7-ecommerce-ms",
   "private": true,
   "workspaces": [
-    "auth-service",
-    "customer-service",
+    "iam-service",
     "product-catalog-service",
     "gateway"
   ],
@@ -14,8 +13,9 @@
     "dev": "yarn workspaces foreach --parallel --topological-dev run dev",
     "build": "yarn workspaces foreach --topological run build",
     "start": "yarn workspaces foreach --parallel --topological run start",
-    "dev:all": "concurrently -n gateway,customer,product-catalog -c auto \"yarn workspace gateway dev\" \"yarn workspace customer-service dev\" \"yarn workspace product-catalog-service dev\"",
-    "start:all": "concurrently -n gateway,customer,product-catalog -c auto \"yarn workspace gateway start\" \"yarn workspace customer-service start\" \"yarn workspace product-catalog-service start\"",
-    "build:all": "concurrently -n gateway,customer,product-catalog -c auto \"yarn workspace gateway build\" \"yarn workspace customer-service build\" \"yarn workspace product-catalog-service build\""
+
+    "dev:all": "concurrently -n iam,product,gateway -c auto \"yarn workspace iam-service dev\" \"yarn workspace product-catalog-service dev\" \"yarn workspace gateway dev\"",
+    "start:all": "concurrently -n iam,product,gateway -c auto \"yarn workspace iam-service start\" \"yarn workspace product-catalog-service start\" \"yarn workspace gateway start\"",
+    "build:all": "concurrently -n iam,product,gateway -c auto \"yarn workspace iam-service build\" \"yarn workspace product-catalog-service build\" \"yarn workspace gateway build\""
   }
 }
