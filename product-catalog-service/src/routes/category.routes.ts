@@ -1,3 +1,4 @@
+import { PERMISSION } from './../helper/canPerformAction';
 import { Router } from 'express';
 import { body, param, query } from 'express-validator';
 import {
@@ -8,6 +9,7 @@ import {
 } from '../controllers/category.controller';
 import { isAuthenticated } from '../middlewares/isAuthenticated';
 import { validateRequest } from '../middlewares/validateRequest';
+import { requirePermission } from '../middlewares/requirePermission';
 
 const router = Router();
 
@@ -16,7 +18,7 @@ const router = Router();
  * Body: { name: string; description?: string; parent?: string(ObjectId) }
  */
 router.post(
-  '/',
+  '/create',
   isAuthenticated,
   [
     body('name')
@@ -36,6 +38,7 @@ router.post(
       .withMessage('parent must be a valid ObjectId')
   ],
   validateRequest,
+  requirePermission(PERMISSION.CATEGORY_CREATE),
   createCategory
 );
 

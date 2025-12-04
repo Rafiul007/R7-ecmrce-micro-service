@@ -16,7 +16,8 @@ export const isAuthenticated = (req: Request, _res: Response, next: NextFunction
 
     req.user = {
       _id: decoded.id,
-      email: decoded.email
+      email: decoded.email,
+      role: decoded.role
     };
 
     next();
