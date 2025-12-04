@@ -12,3 +12,29 @@
 
 - customer registration perfect.
 - But needs refactoring in customer controller, and routes.
+
+
+## DEC 4 13:00
+
+LIST of apis for employee for future work
+POST    /api/employee
+GET     /api/employee
+GET     /api/employee/:id
+PUT     /api/employee/:id
+DELETE  /api/employee/:id
+
+POST    /api/employee/:id/promotions
+GET     /api/employee/:id/promotions
+
+POST    /api/employee/:id/performance
+GET     /api/employee/:id/performance
+
+POST    /api/employee/:id/attendance
+GET     /api/employee/:id/attendance
+
+POST    /api/employee/:id/leave
+GET     /api/employee/:id/leave
+PUT     /api/employee/:id/leave/:leaveId/approve
+
+
+## new controller for employee list and employe with ID

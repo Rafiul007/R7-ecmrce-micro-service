@@ -1,6 +1,11 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { createEmployeeProfile } from '../controllers/employee.controller';
+import { 
+  createEmployeeProfile, 
+  getAllEmployees, 
+  getEmployeeById 
+} from '../controllers/employee.controller';
+
 import { validateRequest } from '../middlewares/validateRequest';
 import { requireAuth } from '../middlewares/requireAuth';
 import { EmployeeType, EmploymentType } from '../models/employeeModel';
@@ -9,24 +14,9 @@ import { requireAdmin } from '../middlewares/requireAdmin';
 const router = express.Router();
 
 /**
- * @api {post} /api/employee/create
+ * @api {post} /api/staff/register
  * @description Admin creates an employee profile for an existing user.
- * @access ADMIN ONLY (Bearer token required)
- *
- * @body
- *   userId: ObjectId (required)
- *   employeeType: manager | staff | delivery | support (required)
- *   phone: string (required)
- *   gender: male | female | other (required)
- *   dateOfBirth: YYYY-MM-DD (required)
- *   emergencyContact: { name, phone, relation } (required)
- *   employmentType: full_time | part_time | contract | intern (required)
- *   designation: string (required)
- *   department: string (required)
- *   joiningDate: YYYY-MM-DD (required)
- *   salary: number (required)
- *   salaryCurrency: string (required)
- *   salaryFrequency: hourly | weekly | monthly (required)
+ * @access ADMIN ONLY
  */
 router.post(
   '/register',
@@ -68,5 +58,19 @@ router.post(
   validateRequest,
   createEmployeeProfile
 );
+
+/**
+ * @api {get} /api/staff
+ * @description Get all employees with optional pagination + filters.
+ * @access ADMIN ONLY
+ */
+router.get('/', requireAuth, requireAdmin, getAllEmployees);
+
+/**
+ * @api {get} /api/staff/:id
+ * @description Get details of a single employee by MongoDB ID.
+ * @access ADMIN ONLY
+ */
+router.get('/:id', requireAuth, requireAdmin, getEmployeeById);
 
 export default router;

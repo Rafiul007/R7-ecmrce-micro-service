@@ -140,3 +140,70 @@ export const createEmployeeProfile = asyncHandler(async (req: AuthRequest, res) 
     data: profile
   });
 });
+
+/* -------------------------------------------------------------
+   GET ALL EMPLOYEES
+------------------------------------------------------------- */
+export const getAllEmployees = asyncHandler(async (req: AuthRequest, res) => {
+  const admin = req.user;
+
+  if (!admin) {
+    throw new AppError('Unauthorized: No user in request', 401);
+  }
+
+  if (admin.role !== 'admin') {
+    throw new AppError('Only admin can view employee list', 403);
+  }
+
+  const { page = 1, limit = 20, department, designation } = req.query;
+
+  const query: any = {};
+  if (department) query.department = department;
+  if (designation) query.designation = designation;
+
+  const employees = await EmployeeProfile.find(query)
+    .skip((+page - 1) * +limit)
+    .limit(+limit)
+    .populate('userId', 'name email role');
+
+  responseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Employee list fetched',
+    data: employees
+  });
+});
+
+
+/* -------------------------------------------------------------
+   GET SINGLE EMPLOYEE BY ID
+------------------------------------------------------------- */
+export const getEmployeeById = asyncHandler(async (req: AuthRequest, res) => {
+  const admin = req.user;
+
+  if (!admin) {
+    throw new AppError('Unauthorized: No user in request', 401);
+  }
+
+  if (admin.role !== 'admin') {
+    throw new AppError('Only admin can view employee details', 403);
+  }
+
+  const { id } = req.params;
+
+  const employee = await EmployeeProfile.findById(id).populate(
+    'userId',
+    'name email role'
+  );
+
+  if (!employee) {
+    throw new AppError('Employee not found', 404);
+  }
+
+  responseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Employee details fetched',
+    data: employee
+  });
+});

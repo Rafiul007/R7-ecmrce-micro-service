@@ -2,7 +2,8 @@ import mongoose, { Schema, Document, Types } from 'mongoose';
 
 export enum UserRole {
   USER = 'user',
-  ADMIN = 'admin'
+  ADMIN = 'admin',
+  EMPLOYEE = 'employee'
 }
 
 export interface IUser extends Document {
