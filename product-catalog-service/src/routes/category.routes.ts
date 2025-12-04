@@ -1,3 +1,4 @@
+import { PERMISSION } from './../helper/canPerformAction';
 import { Router } from 'express';
 import { body, param, query } from 'express-validator';
 import {
@@ -37,7 +38,7 @@ router.post(
       .withMessage('parent must be a valid ObjectId')
   ],
   validateRequest,
-  requirePermission('category:create' ),
+  requirePermission(PERMISSION.CATEGORY_CREATE),
   createCategory
 );
 

@@ -9,6 +9,7 @@ import {
 import { isAuthenticated } from '../middlewares/isAuthenticated';
 import { validateRequest } from '../middlewares/validateRequest';
 import { requirePermission } from '../middlewares/requirePermission';
+import { PERMISSION } from '../helper/canPerformAction';
 
 const router = Router();
 
@@ -75,7 +76,7 @@ router.post(
     body('tags').optional().isArray()
   ],
   validateRequest,
-  requirePermission('product:create' ),
+  requirePermission(PERMISSION.PRODUCT_CREATE),
   createProduct
 );
 
