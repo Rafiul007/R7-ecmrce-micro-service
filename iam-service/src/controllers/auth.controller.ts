@@ -45,7 +45,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     statusCode: 201,
     success: true,
     message: 'User registered',
-    data: { accessToken, user }
+    data: { accessToken }
   });
 });
 
@@ -69,11 +69,12 @@ export const login = asyncHandler(async (req, res) => {
 
   setRefreshTokenCookie(res, refreshToken);
 
+
   responseHandler(res, {
     statusCode: 200,
     success: true,
     message: 'Logged in',
-    data: { accessToken, user }
+    data: { accessToken }
   });
 });
 
