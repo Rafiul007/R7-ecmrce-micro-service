@@ -110,6 +110,7 @@ router.delete(
   isAuthenticated,
   [param('id').isMongoId().withMessage('Invalid product id')],
   validateRequest,
+  requirePermission(PERMISSION.PRODUCT_DELETE),
   deleteProduct
 );
 

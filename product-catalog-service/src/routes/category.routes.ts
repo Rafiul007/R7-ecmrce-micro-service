@@ -86,6 +86,7 @@ router.patch(
   isAuthenticated,
   [param('id').isMongoId().withMessage('Invalid id')],
   validateRequest,
+  requirePermission(PERMISSION.CATEGORY_UPDATE),
   toggleActive
 );
 export default router;
