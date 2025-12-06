@@ -6,17 +6,7 @@ import { AppError } from '../utils/error-handler';
 import { responseHandler } from '../utils/response-handler';
 import { Category } from '../models/categoryModel';
 import { Product } from '../models/productModel';
-
-const makeSlug = (name: string) =>
-  name
-    .toLowerCase()
-    .normalize('NFKD')
-    .replace(/[\u0300-\u036f]/g, '')
-    .replace(/\s+/g, '-')
-    .replace(/[^\w\-]+/g, '')
-    .replace(/\-\-+/g, '-')
-    .replace(/^-+/, '')
-    .replace(/-+$/, '');
+import { makeSlug } from '../helper/makeSlug';
 
 export const createProduct = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?._id;
