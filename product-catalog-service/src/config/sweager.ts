@@ -15,8 +15,8 @@ export const setupSwagger = (app: Express) => {
       },
       servers: [
         {
-          url: `${process.env.SWAGGER_SERVER_URL || `http://localhost:${port}`}`,
-          description: "Current Server",
+          url: process.env.SWAGGER_SERVER_URL || `http://localhost:${port}`,
+          description: "Product Catalog Service",
         },
       ],
       components: {
@@ -30,9 +30,7 @@ export const setupSwagger = (app: Express) => {
       },
       security: [{ bearerAuth: [] }],
     },
-
-    // 👇 Scans documentation from these files
-    apis: ["./src/routes/*.ts", "./src/docs/*.ts"],
+    apis: ["./src/routes/**/*.ts", "./src/docs/**/*.ts"],
   };
 
   const swaggerSpec = swaggerJsDoc(options);

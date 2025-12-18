@@ -42,5 +42,4 @@ const PORT = process.env.PORT || 5001;
 
 app.listen(PORT, () => { 
   console.log(`🚀 IAM running on port ${PORT}`);
-  console.log(`📄 Swagger Docs available at http://localhost:${PORT}/docs`);
 });
