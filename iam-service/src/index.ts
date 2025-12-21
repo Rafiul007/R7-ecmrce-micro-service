@@ -7,6 +7,8 @@ import morgan from 'morgan';
 import customerRoutes from './routes/customer.routes';
 import employeeRoutes from './routes/employee.routes';
 import authRoutes from './routes/auth.routes';
+import { setupSwagger } from './config/swagger';
+
 dotenv.config();
 connectDB();
 
@@ -25,17 +27,19 @@ app.use(morgan('dev'));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// app.get('/', getAuthStatus);
+// 🔥 Enable Swagger Docs
+setupSwagger(app);
 
-// app.use('/', authRoutes);
-
+// Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/customer', customerRoutes);
 app.use('/api/staff', employeeRoutes);
 
-app.use(globalErrorHandler); 
+// Error Handler
+app.use(globalErrorHandler);
+
 const PORT = process.env.PORT || 5001;
+
 app.listen(PORT, () => { 
-  console.log(`✅ IAM running on port ${PORT}`);
+  console.log(`🚀 IAM running on port ${PORT}`);
 });
- 

@@ -3,20 +3,20 @@ import swaggerUi from "swagger-ui-express";
 import { Express } from "express";
 
 export const setupSwagger = (app: Express) => {
-  const port = process.env.PORT || 5000;
+  const port = process.env.PORT || 3000;
 
   const options: swaggerJsDoc.Options = {
     definition: {
       openapi: "3.0.0",
       info: {
-        title: "Product Catalog Service API",
+        title: "IAM Service API",
         version: "1.0.0",
-        description: "API documentation for Product Catalog microservice",
+        description: "API documentation for Identity and Access Management microservice",
       },
       servers: [
         {
           url: process.env.SWAGGER_SERVER_URL || `http://localhost:${port}`,
-          description: "Product Catalog Service",
+          description: "IAM Service",
         },
       ],
       components: {
