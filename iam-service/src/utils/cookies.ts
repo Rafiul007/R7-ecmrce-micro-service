@@ -1,4 +1,4 @@
-import { Response } from 'express';
+import { Response, Request } from 'express';
 
 const REFRESH_TOKEN_EXPIRATION_DAYS = 14;
 
@@ -18,6 +18,6 @@ export const clearRefreshTokenCookie = (res: Response) => {
     sameSite: 'strict'
   });
 };
-export const getRefreshTokenFromCookie = (req: any): string | undefined => {
+export const getRefreshTokenFromCookie = (req: Request): string | undefined => {
   return req.cookies.refreshToken;
 };

@@ -69,7 +69,6 @@ export const login = asyncHandler(async (req, res) => {
 
   setRefreshTokenCookie(res, refreshToken);
 
-
   responseHandler(res, {
     statusCode: 200,
     success: true,

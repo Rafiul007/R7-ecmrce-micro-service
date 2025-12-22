@@ -157,7 +157,7 @@ export const getAllEmployees = asyncHandler(async (req: AuthRequest, res) => {
 
   const { page = 1, limit = 20, department, designation } = req.query;
 
-  const query: any = {};
+  const query: Record<string, unknown> = {};
   if (department) query.department = department;
   if (designation) query.designation = designation;
 
@@ -173,7 +173,6 @@ export const getAllEmployees = asyncHandler(async (req: AuthRequest, res) => {
     data: employees
   });
 });
-
 
 /* -------------------------------------------------------------
    GET SINGLE EMPLOYEE BY ID
@@ -191,10 +190,7 @@ export const getEmployeeById = asyncHandler(async (req: AuthRequest, res) => {
 
   const { id } = req.params;
 
-  const employee = await EmployeeProfile.findById(id).populate(
-    'userId',
-    'name email role'
-  );
+  const employee = await EmployeeProfile.findById(id).populate('userId', 'name email role');
 
   if (!employee) {
     throw new AppError('Employee not found', 404);
