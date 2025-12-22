@@ -175,3 +175,5 @@ export const listCategories = asyncHandler(async (req: Request, res: Response) =
     }
   });
 });
+
+// Test
