@@ -106,3 +106,5 @@ export const logout = asyncHandler(async (req, res) => {
     message: 'Logged out'
   });
 });
+
+// Test
