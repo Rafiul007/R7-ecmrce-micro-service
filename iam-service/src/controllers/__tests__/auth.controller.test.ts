@@ -12,21 +12,21 @@ import { Request, Response, NextFunction } from 'express';
 jest.mock('../../models/userModel', () => ({
   User: {
     findOne: jest.fn(),
-    create: jest.fn(),
-  },
+    create: jest.fn()
+  }
 }));
 
 jest.mock('../../utils/jwt', () => ({
   generateAccessToken: jest.fn(),
-  generateRefreshToken: jest.fn(),
+  generateRefreshToken: jest.fn()
 }));
 
 jest.mock('../../utils/cookies', () => ({
-  setRefreshTokenCookie: jest.fn(),
+  setRefreshTokenCookie: jest.fn()
 }));
 
 jest.mock('bcryptjs', () => ({
-  hash: jest.fn(),
+  hash: jest.fn()
 }));
 
 /* -------------------------------------------------------------------------- */
@@ -71,8 +71,8 @@ describe('Auth Controller — registerUser', () => {
         body: {
           fullName: 'John Doe',
           email: 'john@example.com',
-          password: 'plain-password',
-        },
+          password: 'plain-password'
+        }
       } as Request;
 
       const res = createMockRes();
@@ -83,7 +83,7 @@ describe('Auth Controller — registerUser', () => {
       mockCreate.mockResolvedValue({
         _id: 'user-id-123',
         email: 'john@example.com',
-        roles: ['user'],
+        roles: ['user']
       });
 
       mockAccessToken.mockReturnValue('access-token');
@@ -98,7 +98,7 @@ describe('Auth Controller — registerUser', () => {
         expect.objectContaining({
           email: 'john@example.com',
           password: 'hashed-password',
-          roles: ['user'],
+          roles: ['user']
         })
       );
 
@@ -119,8 +119,8 @@ describe('Auth Controller — registerUser', () => {
           success: true,
           message: 'User registered',
           data: {
-            accessToken: 'access-token',
-          },
+            accessToken: 'access-token'
+          }
         })
       );
 
@@ -134,8 +134,8 @@ describe('Auth Controller — registerUser', () => {
         body: {
           fullName: 'John Doe',
           email: 'john@example.com',
-          password: 'password',
-        },
+          password: 'password'
+        }
       } as Request;
 
       const res = createMockRes();

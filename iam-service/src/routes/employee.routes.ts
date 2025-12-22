@@ -1,9 +1,9 @@
 import express from 'express';
 import { body } from 'express-validator';
-import { 
-  createEmployeeProfile, 
-  getAllEmployees, 
-  getEmployeeById 
+import {
+  createEmployeeProfile,
+  getAllEmployees,
+  getEmployeeById
 } from '../controllers/employee.controller';
 
 import { validateRequest } from '../middlewares/validateRequest';

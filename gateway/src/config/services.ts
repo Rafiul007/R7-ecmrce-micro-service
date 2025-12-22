@@ -1,4 +1,4 @@
-import dotenv from "dotenv";
+import dotenv from 'dotenv';
 dotenv.config();
 
 function requireEnv(name: string): string {
@@ -8,8 +8,8 @@ function requireEnv(name: string): string {
 }
 
 export const services = {
-  iam: requireEnv("IAM_SERVICE_URL"),
-  "product-catalog": requireEnv("PRODUCT_CATELOG_SERVICE_URL"),
+  iam: requireEnv('IAM_SERVICE_URL'),
+  'product-catalog': requireEnv('PRODUCT_CATELOG_SERVICE_URL'),
 };
 
 export default services;

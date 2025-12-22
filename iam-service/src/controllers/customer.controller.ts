@@ -3,7 +3,7 @@ import { User } from '../models/userModel';
 import { asyncHandler } from '../utils/async-handler';
 import { AppError } from '../utils/error-handler';
 import { responseHandler } from '../utils/response-handler';
-import { Request, Response, NextFunction } from 'express';
+import { Request, Response } from 'express';
 
 export const createCustomerProfile = asyncHandler(async (req: Request, res: Response) => {
   const { email, address, customerType, gender, dateOfBirth } = req.body;

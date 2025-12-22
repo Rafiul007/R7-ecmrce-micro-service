@@ -1,0 +1,4 @@
+# Run lint and format for all services
+cd /home/rafie/Desktop/R7-ecmrce-micro-service/iam-service && yarn lint && yarn format
+cd /home/rafie/Desktop/R7-ecmrce-micro-service/product-catalog-service && yarn lint && yarn format
+cd /home/rafie/Desktop/R7-ecmrce-micro-service/gateway && yarn lint && yarn format

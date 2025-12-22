@@ -98,7 +98,10 @@ describe('createEmployeeProfile', () => {
     await createEmployeeProfile(req, {} as any, next);
 
     expect(next).toHaveBeenCalledWith(
-      expect.objectContaining({ statusCode: 403, message: 'Only admin can create employee profiles' })
+      expect.objectContaining({
+        statusCode: 403,
+        message: 'Only admin can create employee profiles'
+      })
     );
   });
 

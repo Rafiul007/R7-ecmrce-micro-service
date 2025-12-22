@@ -40,6 +40,6 @@ app.use(globalErrorHandler);
 
 const PORT = process.env.PORT || 5001;
 
-app.listen(PORT, () => { 
+app.listen(PORT, () => {
   console.log(`🚀 IAM running on port ${PORT}`);
 });

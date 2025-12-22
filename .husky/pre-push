@@ -1,0 +1,4 @@
+# Run tests for all services
+cd /home/rafie/Desktop/R7-ecmrce-micro-service/iam-service && yarn test
+cd /home/rafie/Desktop/R7-ecmrce-micro-service/product-catalog-service && yarn test
+cd /home/rafie/Desktop/R7-ecmrce-micro-service/gateway && yarn test

@@ -7,9 +7,11 @@
     "gateway"
   ],
   "devDependencies": {
-    "concurrently": "^9.2.1"
+    "concurrently": "^9.2.1",
+    "husky": "^9.1.7"
   },
   "scripts": {
+    "prepare": "husky",
     "dev": "yarn workspaces foreach --parallel --topological-dev run dev",
     "build": "yarn workspaces foreach --topological run build",
     "start": "yarn workspaces foreach --parallel --topological run start",

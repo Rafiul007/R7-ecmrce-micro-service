@@ -24,7 +24,7 @@ export const requireAuth = (req: Request, _res: Response, next: NextFunction) =>
     };
 
     next();
-  } catch (err) {
+  } catch {
     throw new AppError('Invalid or expired access token', 401);
   }
 };
