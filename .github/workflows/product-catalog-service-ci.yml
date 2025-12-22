@@ -1,0 +1,38 @@
+name: Product Catalog Service – Unit Tests
+
+on:
+  push:
+    paths:
+      - 'product-catalog-service/**'
+  pull_request:
+    paths:
+      - 'product-catalog-service/**'
+
+jobs:
+  product-catalog-unit-tests:
+    name: Run Product Catalog service unit tests
+    runs-on: ubuntu-latest
+
+    defaults:
+      run:
+        working-directory: product-catalog-service
+
+    strategy:
+      matrix:
+        node-version: [18.x]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'yarn'
+
+      - name: Install dependencies
+        run: yarn install --frozen-lockfile
+
+      - name: Run unit tests
+        run: yarn test
