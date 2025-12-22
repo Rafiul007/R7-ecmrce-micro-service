@@ -2,8 +2,11 @@ name: Product Catalog Service – Unit Tests
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'product-catalog-service/**'
+
   pull_request:
     paths:
       - 'product-catalog-service/**'
@@ -29,7 +32,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
+          cache: yarn
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
