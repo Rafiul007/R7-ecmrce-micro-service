@@ -2,8 +2,11 @@ name: IAM Service – Unit Tests
 
 on:
   push:
+    branches:
+      - main
     paths:
       - 'iam-service/**'
+
   pull_request:
     paths:
       - 'iam-service/**'
@@ -29,7 +32,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node-version }}
-          cache: 'yarn'
+          cache: yarn
 
       - name: Install dependencies
         run: yarn install --frozen-lockfile
