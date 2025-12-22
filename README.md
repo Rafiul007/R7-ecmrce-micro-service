@@ -6,7 +6,7 @@
 
 ## 📌 Overview
 
-This project implements a real-world e-commerce backend using microservices architecture.  
+This project implements a real-world e-commerce backend using the microservices architecture.  
 Each service handles its own domain (authentication, catalog, etc.) and communicates through an API Gateway.
 
 This project focuses on:
@@ -17,6 +17,8 @@ This project focuses on:
 - 🔹 Swagger API documentation
 - 🔹 Docker support
 - 🔹 Scalable service boundaries
+- 🔹 Unit Test using Jest
+- 🔹 Github workflow
 
 ---
 
@@ -27,11 +29,13 @@ This project focuses on:
 | Language           | TypeScript                               |
 | Framework          | Express.js                               |
 | Auth               | JWT + Refresh Tokens (HTTP-only cookies) |
-| Database           | MongoDB + Redis                                  |
+| Database           | MongoDB + Redis                          |
 | API Gateway        | Custom Node-based router                 |
 | Documentation      | Swagger (OpenAPI 3.0)                    |
 | Package Management | Yarn Workspaces                          |
 | Containerization   | Docker                                   |
+| Test               | Jest                                     |
+| ------------------ | ---------------------------------------- |
 
 
 ## 🚀 Running the Project
