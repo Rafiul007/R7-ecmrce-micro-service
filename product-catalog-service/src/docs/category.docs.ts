@@ -44,10 +44,10 @@
  *       properties:
  *         name:
  *           type: string
- *           example: "Mobiles"
+ *           example: "Smartphones"
  *         description:
  *           type: string
- *           example: "Latest smartphones"
+ *           example: "Android and iOS mobile phones"
  *         parent:
  *           type: string
  *           nullable: true
@@ -104,7 +104,7 @@
 
 /**
  * @openapi
- * /api/category/create:
+ * /categories/create:
  *   post:
  *     summary: Create a new category
  *     tags: [Category]
@@ -133,7 +133,7 @@
 
 /**
  * @openapi
- * /api/category:
+ * /categories:
  *   get:
  *     summary: Get all categories (supports filtering, sorting, pagination)
  *     tags: [Category]
@@ -185,7 +185,7 @@
 
 /**
  * @openapi
- * /api/category/{id}:
+ * /categories/{id}:
  *   get:
  *     summary: Get a category by ID
  *     tags: [Category]
@@ -208,7 +208,7 @@
 
 /**
  * @openapi
- * /api/category/{id}/toggle-active:
+ * /categories/{id}/toggle-active:
  *   patch:
  *     summary: Toggle the active status of a category
  *     tags: [Category]

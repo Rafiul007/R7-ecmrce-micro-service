@@ -19,10 +19,18 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
     price,
     discountPrice,
     sku,
+    barcode,
     stock,
+    reorderLevel,
+    unit,
     category,
     images,
     variants,
+    availableInStore,
+    availableOnline,
+    weightKg,
+    dimensions,
+    taxRate,
     metaTitle,
     metaDescription,
     tags
@@ -43,10 +51,18 @@ export const createProduct = asyncHandler(async (req: Request, res: Response) =>
     price,
     discountPrice,
     sku,
+    barcode,
     stock,
+    reorderLevel,
+    unit,
     category,
     images,
     variants,
+    availableInStore,
+    availableOnline,
+    weightKg,
+    dimensions,
+    taxRate,
     metaTitle: metaTitle || name,
     metaDescription: metaDescription || description?.slice(0, 160),
     tags,
@@ -82,7 +98,7 @@ export const listProducts = asyncHandler(async (req: Request, res: Response) => 
   const skip = (page - 1) * limit;
 
   const { search, active, sortBy, sortOrder } = req.query as Record<string, string>;
-  const filter: Record<string, any> = {};
+  const filter: Record<string, unknown> = {};
 
   if (typeof active !== 'undefined') filter.isActive = String(active) === 'true';
 
@@ -133,7 +149,7 @@ export const deleteProduct = asyncHandler(async (req: Request, res: Response) =>
   const product = await Product.findById(id);
   if (!product) throw new AppError('Product not found', 404);
 
-  (product as any).deletedAt = new Date();
+  product.deletedAt = new Date();
   product.updatedBy = new mongoose.Types.ObjectId(userId);
   await product.save();
 

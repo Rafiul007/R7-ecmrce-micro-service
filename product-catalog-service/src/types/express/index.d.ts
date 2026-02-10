@@ -1,4 +1,4 @@
-import { Types } from 'mongoose';
+import 'express';
 
 declare global {
   namespace Express {
@@ -11,3 +11,5 @@ declare global {
     }
   }
 }
+
+export {};

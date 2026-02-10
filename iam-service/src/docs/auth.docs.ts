@@ -3,7 +3,7 @@
  * /api/auth/register:
  *   post:
  *     summary: Register a new user
- *     description: Create a new user account with email and password. Returns user data and authentication tokens.
+ *     description: Create a new user account with email and password. Returns an access token and sets a refresh token cookie.
  *     tags:
  *       - Authentication
  *     requestBody:
@@ -39,6 +39,13 @@
  *                 pattern: '^\+?[1-9]\d{1,14}$'
  *                 description: Optional phone number in E.164 format
  *                 example: "+1234567890"
+ *               roles:
+ *                 type: array
+ *                 description: Optional roles. If omitted, defaults to ["user"].
+ *                 items:
+ *                   type: string
+ *                   enum: [user, admin, employee]
+ *                 example: ["admin"]
  *     responses:
  *       201:
  *         description: User successfully registered
@@ -56,25 +63,6 @@
  *                 data:
  *                   type: object
  *                   properties:
- *                     user:
- *                       type: object
- *                       properties:
- *                         id:
- *                           type: string
- *                           example: "507f1f77bcf86cd799439011"
- *                         fullName:
- *                           type: string
- *                           example: John Doe
- *                         email:
- *                           type: string
- *                           example: john.doe@example.com
- *                         phone:
- *                           type: string
- *                           example: "+1234567890"
- *                         createdAt:
- *                           type: string
- *                           format: date-time
- *                           example: "2025-12-15T10:30:00Z"
  *                     accessToken:
  *                       type: string
  *                       description: JWT access token for API authentication
@@ -182,21 +170,6 @@
  *                 data:
  *                   type: object
  *                   properties:
- *                     user:
- *                       type: object
- *                       properties:
- *                         id:
- *                           type: string
- *                           example: "507f1f77bcf86cd799439011"
- *                         fullName:
- *                           type: string
- *                           example: John Doe
- *                         email:
- *                           type: string
- *                           example: john.doe@example.com
- *                         phone:
- *                           type: string
- *                           example: "+1234567890"
  *                     accessToken:
  *                       type: string
  *                       description: JWT access token (expires in 15 minutes)
@@ -286,15 +259,6 @@
  *                       type: string
  *                       description: New JWT access token
  *                       example: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9..."
- *                     user:
- *                       type: object
- *                       properties:
- *                         id:
- *                           type: string
- *                           example: "507f1f77bcf86cd799439011"
- *                         email:
- *                           type: string
- *                           example: john.doe@example.com
  *       401:
  *         description: Missing or invalid refresh token
  *         content:

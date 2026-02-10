@@ -100,7 +100,7 @@ export const listCategories = asyncHandler(async (req: Request, res: Response) =
     string
   >;
 
-  const filter: Record<string, any> = {};
+  const filter: Record<string, unknown> = {};
   if (typeof active !== 'undefined') filter.isActive = String(active) === 'true';
 
   if (typeof parent !== 'undefined') {
@@ -146,12 +146,17 @@ export const listCategories = asyncHandler(async (req: Request, res: Response) =
       )
     : undefined;
 
+  type LeanCategory = {
+    _id: mongoose.Types.ObjectId;
+    [key: string]: unknown;
+    childrenCount?: number;
+  };
   const [items, total] = await Promise.all([
     Category.find(filter, projection)
       .sort({ [sortField]: dir })
       .skip(skip)
       .limit(limit)
-      .lean(),
+      .lean<LeanCategory[]>(),
     Category.countDocuments(filter)
   ]);
 
@@ -162,7 +167,9 @@ export const listCategories = asyncHandler(async (req: Request, res: Response) =
       { $group: { _id: '$parent', count: { $sum: 1 } } }
     ]);
     const map = new Map(counts.map((c) => [String(c._id), c.count]));
-    (items as any[]).forEach((i) => ((i as any).childrenCount = map.get(String(i._id)) || 0));
+    items.forEach((i) => {
+      i.childrenCount = map.get(String(i._id)) || 0;
+    });
   }
 
   responseHandler(res, {

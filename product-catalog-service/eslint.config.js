@@ -11,16 +11,16 @@ export default [
       sourceType: 'module',
       globals: {
         console: 'readonly',
-        process: 'readonly',
-      },
+        process: 'readonly'
+      }
     },
     plugins: {
-      '@typescript-eslint': tseslint,
+      '@typescript-eslint': tseslint
     },
     rules: {
       ...tseslint.configs.recommended.rules,
-      ...prettierConfig.rules,
-    },
+      ...prettierConfig.rules
+    }
   },
   {
     files: ['src/**/*.test.{ts,tsx}', 'src/**/__tests__/**/*.{ts,tsx}'],
@@ -36,19 +36,19 @@ export default [
         expect: 'readonly',
         beforeEach: 'readonly',
         afterEach: 'readonly',
-        jest: 'readonly',
-      },
+        jest: 'readonly'
+      }
     },
     plugins: {
-      '@typescript-eslint': tseslint,
+      '@typescript-eslint': tseslint
     },
     rules: {
       ...tseslint.configs.recommended.rules,
       ...prettierConfig.rules,
-      '@typescript-eslint/no-explicit-any': 'off', // Allow any in tests
-    },
+      '@typescript-eslint/no-explicit-any': 'off' // Allow any in tests
+    }
   },
   {
-    ignores: ['node_modules', 'dist', '*.log', '.env', 'coverage'],
-  },
+    ignores: ['node_modules', 'dist', '*.log', '.env', 'coverage']
+  }
 ];

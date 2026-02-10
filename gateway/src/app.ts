@@ -3,6 +3,7 @@ import dotenv from 'dotenv';
 import morgan from 'morgan';
 import cors from 'cors';
 import proxyRoutes from './routes/proxy.routes';
+import { setupSwagger } from './config/swagger';
 
 dotenv.config();
 
@@ -21,6 +22,11 @@ app.use(
 );
 
 app.use(morgan('dev'));
+
+/* =======================
+   SWAGGER DOCS
+======================= */
+setupSwagger(app);
 
 /* =======================
    PROXY FIRST (RAW STREAM)

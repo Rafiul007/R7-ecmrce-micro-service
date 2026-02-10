@@ -10,7 +10,7 @@ export enum PERMISSION {
 export enum ROLE {
   ADMIN = 'admin',
   MANAGER = 'manager',
-  EMPLOYEE = 'employee', 
+  EMPLOYEE = 'employee',
   CUSTOMER = 'customer'
 }
 
@@ -23,11 +23,7 @@ export const PermissionsMap = {
   [PERMISSION.CATEGORY_DELETE]: [ROLE.ADMIN]
 } as const;
 
-
-export function canPerformAction(
-  userRole: string,
-  action: keyof typeof PermissionsMap
-): boolean {
+export function canPerformAction(userRole: string, action: keyof typeof PermissionsMap): boolean {
   console.log('😎 User role:', userRole);
   const allowedRoles = PermissionsMap[action] as readonly string[];
 

@@ -7,6 +7,12 @@ export interface IVariant {
   stock?: number;
 }
 
+export interface IDimensions {
+  lengthCm?: number;
+  widthCm?: number;
+  heightCm?: number;
+}
+
 export interface IProduct extends Document {
   name: string;
   slug: string;
@@ -14,13 +20,22 @@ export interface IProduct extends Document {
   price: number;
   discountPrice?: number;
   sku?: string;
+  barcode?: string;
   stock: number;
+  reorderLevel?: number;
+  unit?: string;
   category: Types.ObjectId;
   images: string[];
   variants?: IVariant[];
+  availableInStore: boolean;
+  availableOnline: boolean;
+  weightKg?: number;
+  dimensions?: IDimensions;
+  taxRate?: number;
   isActive: boolean;
   createdBy?: Types.ObjectId;
   updatedBy?: Types.ObjectId;
+  deletedAt?: Date;
   metaTitle?: string;
   metaDescription?: string;
   tags?: string[];
@@ -53,15 +68,28 @@ const ProductSchema = new Schema<IProduct>(
       }
     },
     sku: { type: String, unique: true, sparse: true, trim: true },
+    barcode: { type: String, unique: true, sparse: true, trim: true },
     stock: { type: Number, required: true, min: 0 },
+    reorderLevel: { type: Number, min: 0, default: 0 },
+    unit: { type: String, trim: true, maxlength: 20 },
 
     category: { type: Schema.Types.ObjectId, ref: 'Category', required: true },
 
     images: [{ type: String }],
     variants: [VariantSchema],
+    availableInStore: { type: Boolean, default: true },
+    availableOnline: { type: Boolean, default: true },
+    weightKg: { type: Number, min: 0 },
+    dimensions: {
+      lengthCm: { type: Number, min: 0 },
+      widthCm: { type: Number, min: 0 },
+      heightCm: { type: Number, min: 0 }
+    },
+    taxRate: { type: Number, min: 0, max: 100, default: 0 },
     isActive: { type: Boolean, default: true },
     createdBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
     updatedBy: { type: Schema.Types.ObjectId, ref: 'User', default: null },
+    deletedAt: { type: Date, default: null },
     metaTitle: { type: String, maxlength: 60 },
     metaDescription: { type: String, maxlength: 160 },
     tags: [{ type: String, trim: true }]

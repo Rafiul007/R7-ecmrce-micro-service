@@ -3,39 +3,38 @@ import swaggerUi from 'swagger-ui-express';
 import { Express } from 'express';
 
 export const setupSwagger = (app: Express) => {
-  const port = process.env.PORT || 5000;
+  const port = process.env.PORT || 4000;
 
   const options: swaggerJsDoc.Options = {
     definition: {
       openapi: '3.0.0',
       info: {
-        title: 'Product Catalog Service API',
+        title: 'Gateway API',
         version: '1.0.0',
-        description: 'API documentation for Product Catalog microservice'
+        description:
+          'Unified API documentation for all services via the gateway. All paths are prefixed with the service name.',
       },
       servers: [
         {
           url: process.env.SWAGGER_SERVER_URL || `http://localhost:${port}`,
-          description: 'Product Catalog Service'
-        }
+          description: 'Gateway',
+        },
       ],
       components: {
         securitySchemes: {
           bearerAuth: {
             type: 'http',
             scheme: 'bearer',
-            bearerFormat: 'JWT'
-          }
-        }
+            bearerFormat: 'JWT',
+          },
+        },
       },
-      security: [{ bearerAuth: [] }]
     },
-    apis: ['./src/routes/**/*.ts', './src/docs/**/*.ts']
+    apis: ['./src/docs/**/*.ts'],
   };
 
   const swaggerSpec = swaggerJsDoc(options);
-
   app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
 
-  console.log(`📘 Swagger docs available at → http://localhost:${port}/api-docs`);
+  console.log(`📘 Gateway Swagger docs available at → http://localhost:${port}/api-docs`);
 };
