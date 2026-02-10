@@ -21,7 +21,8 @@ export const isAuthenticated = (req: Request, _res: Response, next: NextFunction
     };
 
     next();
-  } catch (err) {
+  } catch (_err) {
+    void _err;
     throw new AppError('Unauthorized: Invalid token', 401);
   }
 };

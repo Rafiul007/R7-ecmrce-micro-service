@@ -14,7 +14,7 @@ import { requirePermission } from '../middlewares/requirePermission';
 const router = Router();
 
 /**
- * POST /category
+ * POST /category/create
  * Body: { name: string; description?: string; parent?: string(ObjectId) }
  */
 router.post(

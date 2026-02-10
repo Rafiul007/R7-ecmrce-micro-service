@@ -18,6 +18,7 @@ export const globalErrorHandler = (
   res: Response,
   _next: NextFunction
 ) => {
+  void _next;
   const statusCode = (err as AppError).statusCode || 500;
   const message = err.message || 'Something went wrong';
 

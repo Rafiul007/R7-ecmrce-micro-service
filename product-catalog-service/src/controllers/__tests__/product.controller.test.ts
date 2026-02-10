@@ -4,21 +4,21 @@ jest.mock('../../models/productModel', () => ({
     create: jest.fn(),
     findById: jest.fn(),
     find: jest.fn(),
-    countDocuments: jest.fn(),
-  },
+    countDocuments: jest.fn()
+  }
 }));
 jest.mock('../../models/categoryModel', () => ({
   Category: {
-    findById: jest.fn(),
-  },
+    findById: jest.fn()
+  }
 }));
 jest.mock('../../utils/response-handler');
 jest.mock('../../helper/makeSlug', () => ({
-  makeSlug: jest.fn(),
+  makeSlug: jest.fn()
 }));
 jest.mock('mongoose', () => ({
   ...jest.requireActual('mongoose'),
-  isValidObjectId: jest.fn(),
+  isValidObjectId: jest.fn()
 }));
 
 import { createProduct, getProductById, listProducts, deleteProduct } from '../product.controller';
@@ -33,12 +33,13 @@ const buildReq = (
   params: Record<string, string> = {},
   query: Record<string, string> = {},
   user: any = { _id: '507f1f77bcf86cd799439011' }
-) => ({
-  body,
-  params,
-  query,
-  user,
-}) as any;
+) =>
+  ({
+    body,
+    params,
+    query,
+    user
+  }) as any;
 
 describe('createProduct controller', () => {
   const baseBody = {
@@ -53,7 +54,7 @@ describe('createProduct controller', () => {
     variants: [{ name: 'Storage', value: '256GB', additionalPrice: 100 }],
     tags: ['apple', 'smartphone'],
     metaTitle: 'iPhone 15 Pro',
-    metaDescription: 'Buy the latest iPhone',
+    metaDescription: 'Buy the latest iPhone'
   };
 
   const mockedResponseHandler = responseHandler as jest.MockedFunction<typeof responseHandler>;
@@ -74,7 +75,7 @@ describe('createProduct controller', () => {
       ...baseBody,
       slug: 'iphone-15-pro',
       createdBy: '507f1f77bcf86cd799439011',
-      updatedBy: '507f1f77bcf86cd799439011',
+      updatedBy: '507f1f77bcf86cd799439011'
     });
 
     await createProduct(buildReq(baseBody), mockRes, mockNext);
@@ -95,13 +96,13 @@ describe('createProduct controller', () => {
       metaDescription: 'Buy the latest iPhone',
       tags: ['apple', 'smartphone'],
       createdBy: '507f1f77bcf86cd799439011',
-      updatedBy: '507f1f77bcf86cd799439011',
+      updatedBy: '507f1f77bcf86cd799439011'
     });
     expect(mockedResponseHandler).toHaveBeenCalledWith(
       mockRes,
       expect.objectContaining({
         statusCode: 201,
-        message: 'Product created successfully',
+        message: 'Product created successfully'
       })
     );
     expect(mockNext).not.toHaveBeenCalled();
@@ -118,7 +119,7 @@ describe('createProduct controller', () => {
       category: '507f1f77bcf86cd799439011',
       images: ['iphone.jpg'],
       variants: [{ name: 'Storage', value: '256GB', additionalPrice: 100 }],
-      tags: ['apple', 'smartphone'],
+      tags: ['apple', 'smartphone']
     };
 
     (Category.findById as jest.Mock).mockResolvedValue({ _id: '507f1f77bcf86cd799439011' });
@@ -127,7 +128,7 @@ describe('createProduct controller', () => {
       ...bodyWithoutSlug,
       slug: 'iphone-15-pro',
       metaTitle: 'iPhone 15 Pro',
-      metaDescription: 'Latest Apple smartphone'.slice(0, 160),
+      metaDescription: 'Latest Apple smartphone'.slice(0, 160)
     });
 
     await createProduct(buildReq(bodyWithoutSlug), mockRes, mockNext);
@@ -137,7 +138,7 @@ describe('createProduct controller', () => {
       expect.objectContaining({
         slug: 'iphone-15-pro',
         metaTitle: 'iPhone 15 Pro',
-        metaDescription: 'Latest Apple smartphone',
+        metaDescription: 'Latest Apple smartphone'
       })
     );
   });
@@ -181,7 +182,10 @@ describe('createProduct controller', () => {
     await createProduct(buildReq(invalidBody), mockRes, mockNext);
 
     expect(mockNext).toHaveBeenCalledWith(
-      expect.objectContaining({ statusCode: 400, message: 'Discount price must be less than or equal to price' })
+      expect.objectContaining({
+        statusCode: 400,
+        message: 'Discount price must be less than or equal to price'
+      })
     );
     expect(Product.create).not.toHaveBeenCalled();
   });
@@ -201,7 +205,7 @@ describe('getProductById controller', () => {
   it('fetches a product when id is valid', async () => {
     const product = { _id: 'prod123', name: 'iPhone 15 Pro', category: { name: 'Electronics' } };
     (Product.findById as jest.Mock).mockReturnValue({
-      populate: jest.fn().mockResolvedValue(product),
+      populate: jest.fn().mockResolvedValue(product)
     });
 
     await getProductById(buildReq({}, { id: 'prod123' }), mockRes, mockNext);
@@ -212,7 +216,7 @@ describe('getProductById controller', () => {
       expect.objectContaining({
         statusCode: 200,
         message: 'Product fetched successfully',
-        data: product,
+        data: product
       })
     );
     expect(mockNext).not.toHaveBeenCalled();
@@ -231,7 +235,7 @@ describe('getProductById controller', () => {
 
   it('calls next with error when product not found', async () => {
     (Product.findById as jest.Mock).mockReturnValue({
-      populate: jest.fn().mockResolvedValue(null),
+      populate: jest.fn().mockResolvedValue(null)
     });
 
     await getProductById(buildReq({}, { id: 'prod123' }), mockRes, mockNext);
@@ -260,7 +264,7 @@ describe('listProducts controller', () => {
       sort: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      lean: jest.fn().mockResolvedValue(products),
+      lean: jest.fn().mockResolvedValue(products)
     });
     (Product.countDocuments as jest.Mock).mockResolvedValue(1);
 
@@ -275,8 +279,8 @@ describe('listProducts controller', () => {
         message: 'Products fetched successfully',
         data: expect.objectContaining({
           products,
-          pagination: { page: 1, limit: 20, total: 1, pages: 1 },
-        }),
+          pagination: { page: 1, limit: 20, total: 1, pages: 1 }
+        })
       })
     );
     expect(mockNext).not.toHaveBeenCalled();
@@ -289,7 +293,7 @@ describe('listProducts controller', () => {
       sort: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      lean: jest.fn().mockResolvedValue(products),
+      lean: jest.fn().mockResolvedValue(products)
     });
     (Product.countDocuments as jest.Mock).mockResolvedValue(1);
 
@@ -299,8 +303,8 @@ describe('listProducts controller', () => {
       $or: [
         { name: { $regex: 'iphone', $options: 'i' } },
         { slug: { $regex: 'iphone', $options: 'i' } },
-        { tags: { $regex: 'iphone', $options: 'i' } },
-      ],
+        { tags: { $regex: 'iphone', $options: 'i' } }
+      ]
     });
   });
 
@@ -310,7 +314,7 @@ describe('listProducts controller', () => {
       sort: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      lean: jest.fn().mockResolvedValue([]),
+      lean: jest.fn().mockResolvedValue([])
     });
     (Product.countDocuments as jest.Mock).mockResolvedValue(0);
 
@@ -325,11 +329,15 @@ describe('listProducts controller', () => {
       sort: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      lean: jest.fn().mockResolvedValue([]),
+      lean: jest.fn().mockResolvedValue([])
     });
     (Product.countDocuments as jest.Mock).mockResolvedValue(0);
 
-    await listProducts(buildReq({}, {}, { sortBy: 'price', sortOrder: 'desc', page: '2', limit: '10' }), mockRes, mockNext);
+    await listProducts(
+      buildReq({}, {}, { sortBy: 'price', sortOrder: 'desc', page: '2', limit: '10' }),
+      mockRes,
+      mockNext
+    );
 
     expect(Product.find).toHaveBeenCalledWith({});
     // Verify sorting and pagination are applied via the chain
@@ -348,10 +356,10 @@ describe('deleteProduct controller', () => {
   });
 
   it('soft deletes a product', async () => {
-    const product = {
+    const product: { _id: string; name: string; deletedAt?: Date; save: jest.Mock } = {
       _id: 'prod123',
       name: 'iPhone',
-      save: jest.fn().mockResolvedValue(undefined),
+      save: jest.fn().mockResolvedValue(undefined)
     };
     (Product.findById as jest.Mock).mockResolvedValue(product);
 
@@ -359,12 +367,12 @@ describe('deleteProduct controller', () => {
 
     expect(Product.findById).toHaveBeenCalledWith('prod123');
     expect(product.save).toHaveBeenCalled();
-    expect((product as any).deletedAt).toBeInstanceOf(Date);
+    expect(product.deletedAt).toBeInstanceOf(Date);
     expect(mockedResponseHandler).toHaveBeenCalledWith(
       mockRes,
       expect.objectContaining({
         statusCode: 200,
-        message: 'Product deleted successfully',
+        message: 'Product deleted successfully'
       })
     );
     expect(mockNext).not.toHaveBeenCalled();

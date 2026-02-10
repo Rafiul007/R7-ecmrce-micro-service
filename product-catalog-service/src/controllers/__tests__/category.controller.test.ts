@@ -5,16 +5,21 @@ jest.mock('../../models/categoryModel', () => ({
     findById: jest.fn(),
     find: jest.fn(),
     countDocuments: jest.fn(),
-    aggregate: jest.fn(),
-  },
+    aggregate: jest.fn()
+  }
 }));
 jest.mock('../../utils/response-handler');
 jest.mock('mongoose', () => ({
   ...jest.requireActual('mongoose'),
-  isValidObjectId: jest.fn(),
+  isValidObjectId: jest.fn()
 }));
 
-import { createCategory, getCategoryById, toggleActive, listCategories } from '../category.controller';
+import {
+  createCategory,
+  getCategoryById,
+  toggleActive,
+  listCategories
+} from '../category.controller';
 import { Category } from '../../models/categoryModel';
 import { responseHandler } from '../../utils/response-handler';
 import mongoose from 'mongoose';
@@ -24,18 +29,19 @@ const buildReq = (
   params: Record<string, string> = {},
   query: Record<string, string> = {},
   user: any = { _id: '507f1f77bcf86cd799439011' }
-) => ({
-  body,
-  params,
-  query,
-  user,
-}) as any;
+) =>
+  ({
+    body,
+    params,
+    query,
+    user
+  }) as any;
 
 describe('createCategory controller', () => {
   const baseBody = {
     name: 'Electronics',
     description: 'Electronic items',
-    parent: null,
+    parent: null
   };
 
   const mockedResponseHandler = responseHandler as jest.MockedFunction<typeof responseHandler>;
@@ -58,7 +64,7 @@ describe('createCategory controller', () => {
       parent: null,
       isActive: true,
       createdBy: '507f1f77bcf86cd799439011',
-      updatedBy: '507f1f77bcf86cd799439011',
+      updatedBy: '507f1f77bcf86cd799439011'
     });
 
     await createCategory(buildReq(baseBody), mockRes, mockNext);
@@ -71,13 +77,13 @@ describe('createCategory controller', () => {
       parent: null,
       isActive: true,
       createdBy: '507f1f77bcf86cd799439011',
-      updatedBy: '507f1f77bcf86cd799439011',
+      updatedBy: '507f1f77bcf86cd799439011'
     });
     expect(mockedResponseHandler).toHaveBeenCalledWith(
       mockRes,
       expect.objectContaining({
         statusCode: 201,
-        message: 'Category created successfully',
+        message: 'Category created successfully'
       })
     );
     expect(mockNext).not.toHaveBeenCalled();
@@ -91,17 +97,21 @@ describe('createCategory controller', () => {
       _id: 'cat123',
       name: 'Laptops',
       slug: 'laptops',
-      parent: parentId,
+      parent: parentId
     });
 
-    await createCategory(buildReq({ ...baseBody, name: 'Laptops', parent: parentId.toString() }), mockRes, mockNext);
+    await createCategory(
+      buildReq({ ...baseBody, name: 'Laptops', parent: parentId.toString() }),
+      mockRes,
+      mockNext
+    );
 
     expect(Category.findById).toHaveBeenCalledWith(parentId.toString());
     expect(Category.findOne).toHaveBeenCalledWith({ parent: parentId, name: 'Laptops' });
     expect(Category.create).toHaveBeenCalledWith(
       expect.objectContaining({
         name: 'Laptops',
-        parent: parentId,
+        parent: parentId
       })
     );
     expect(mockNext).not.toHaveBeenCalled();
@@ -130,7 +140,11 @@ describe('createCategory controller', () => {
   it('calls next with error when parent category not found', async () => {
     (Category.findById as jest.Mock).mockResolvedValue(null);
 
-    await createCategory(buildReq({ ...baseBody, parent: '507f1f77bcf86cd799439011' }), mockRes, mockNext);
+    await createCategory(
+      buildReq({ ...baseBody, parent: '507f1f77bcf86cd799439011' }),
+      mockRes,
+      mockNext
+    );
 
     expect(mockNext).toHaveBeenCalledWith(
       expect.objectContaining({ statusCode: 404, message: 'Parent category not found' })
@@ -144,7 +158,10 @@ describe('createCategory controller', () => {
     await createCategory(buildReq(baseBody), mockRes, mockNext);
 
     expect(mockNext).toHaveBeenCalledWith(
-      expect.objectContaining({ statusCode: 400, message: 'Category with this name already exists under same parent' })
+      expect.objectContaining({
+        statusCode: 400,
+        message: 'Category with this name already exists under same parent'
+      })
     );
     expect(Category.create).not.toHaveBeenCalled();
   });
@@ -173,7 +190,7 @@ describe('getCategoryById controller', () => {
       expect.objectContaining({
         statusCode: 200,
         message: 'Category fetched',
-        data: category,
+        data: category
       })
     );
     expect(mockNext).not.toHaveBeenCalled();
@@ -217,7 +234,7 @@ describe('toggleActive controller', () => {
       _id: 'cat123',
       name: 'Electronics',
       isActive: true,
-      save: jest.fn().mockResolvedValue(undefined),
+      save: jest.fn().mockResolvedValue(undefined)
     };
     (Category.findById as jest.Mock).mockResolvedValue(category);
 
@@ -229,7 +246,7 @@ describe('toggleActive controller', () => {
       mockRes,
       expect.objectContaining({
         statusCode: 200,
-        message: 'Category deactivated successfully',
+        message: 'Category deactivated successfully'
       })
     );
     expect(mockNext).not.toHaveBeenCalled();
@@ -283,7 +300,7 @@ describe('listCategories controller', () => {
       sort: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      lean: jest.fn().mockResolvedValue(categories),
+      lean: jest.fn().mockResolvedValue(categories)
     });
     (Category.countDocuments as jest.Mock).mockResolvedValue(1);
 
@@ -298,8 +315,8 @@ describe('listCategories controller', () => {
         message: 'Categories fetched',
         data: expect.objectContaining({
           categories,
-          pagination: { page: 1, limit: 20, total: 1, pages: 1 },
-        }),
+          pagination: { page: 1, limit: 20, total: 1, pages: 1 }
+        })
       })
     );
     expect(mockNext).not.toHaveBeenCalled();
@@ -311,7 +328,7 @@ describe('listCategories controller', () => {
       sort: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      lean: jest.fn().mockResolvedValue(categories),
+      lean: jest.fn().mockResolvedValue(categories)
     });
     (Category.countDocuments as jest.Mock).mockResolvedValue(1);
 
@@ -321,8 +338,8 @@ describe('listCategories controller', () => {
       {
         $or: [
           { name: { $regex: 'elec', $options: 'i' } },
-          { slug: { $regex: 'elec', $options: 'i' } },
-        ],
+          { slug: { $regex: 'elec', $options: 'i' } }
+        ]
       },
       undefined
     );
@@ -333,7 +350,7 @@ describe('listCategories controller', () => {
       sort: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      lean: jest.fn().mockResolvedValue([]),
+      lean: jest.fn().mockResolvedValue([])
     });
     (Category.countDocuments as jest.Mock).mockResolvedValue(0);
 
@@ -347,7 +364,7 @@ describe('listCategories controller', () => {
       sort: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      lean: jest.fn().mockResolvedValue([]),
+      lean: jest.fn().mockResolvedValue([])
     });
     (Category.countDocuments as jest.Mock).mockResolvedValue(0);
 
@@ -362,7 +379,7 @@ describe('listCategories controller', () => {
       sort: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      lean: jest.fn().mockResolvedValue([]),
+      lean: jest.fn().mockResolvedValue([])
     });
     (Category.countDocuments as jest.Mock).mockResolvedValue(0);
 
@@ -382,12 +399,12 @@ describe('listCategories controller', () => {
   });
 
   it('includes childrenCount when requested', async () => {
-    const categories = [{ _id: 'cat1' }];
+    const categories: Array<{ _id: string; childrenCount?: number }> = [{ _id: 'cat1' }];
     (Category.find as jest.Mock).mockReturnValue({
       sort: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      lean: jest.fn().mockResolvedValue(categories),
+      lean: jest.fn().mockResolvedValue(categories)
     });
     (Category.countDocuments as jest.Mock).mockResolvedValue(1);
     (Category.aggregate as jest.Mock).mockResolvedValue([{ _id: 'cat1', count: 5 }]);
@@ -396,9 +413,9 @@ describe('listCategories controller', () => {
 
     expect(Category.aggregate).toHaveBeenCalledWith([
       { $match: { parent: { $in: ['cat1'] } } },
-      { $group: { _id: '$parent', count: { $sum: 1 } } },
+      { $group: { _id: '$parent', count: { $sum: 1 } } }
     ]);
-    expect((categories[0] as any).childrenCount).toBe(5);
+    expect(categories[0].childrenCount).toBe(5);
   });
 
   it('applies sorting and field selection', async () => {
@@ -406,11 +423,15 @@ describe('listCategories controller', () => {
       sort: jest.fn().mockReturnThis(),
       skip: jest.fn().mockReturnThis(),
       limit: jest.fn().mockReturnThis(),
-      lean: jest.fn().mockResolvedValue([]),
+      lean: jest.fn().mockResolvedValue([])
     });
     (Category.countDocuments as jest.Mock).mockResolvedValue(0);
 
-    await listCategories(buildReq({}, {}, { sortBy: 'name', sortOrder: 'asc', fields: 'name,slug' }), mockRes, mockNext);
+    await listCategories(
+      buildReq({}, {}, { sortBy: 'name', sortOrder: 'asc', fields: 'name,slug' }),
+      mockRes,
+      mockNext
+    );
 
     expect(Category.find).toHaveBeenCalledWith({}, { name: 1, slug: 1 });
     // Note: sort is chained, but we can check the mock chain
