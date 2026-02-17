@@ -3,7 +3,10 @@ import { body } from 'express-validator';
 import {
   createEmployeeProfile,
   getAllEmployees,
-  getEmployeeById
+  getEmployeeById,
+  listEmployeePermissions,
+  addEmployeePermissions,
+  removeEmployeePermissions
 } from '../controllers/employee.controller';
 
 import { validateRequest } from '../middlewares/validateRequest';
@@ -65,6 +68,41 @@ router.post(
  * @access ADMIN ONLY
  */
 router.get('/', requireAuth, requireAdmin, getAllEmployees);
+
+/**
+ * @api {get} /api/staff/permissions
+ * @description Get available employee permissions + base permissions.
+ * @access ADMIN ONLY
+ */
+router.get('/permissions', requireAuth, requireAdmin, listEmployeePermissions);
+
+/**
+ * @api {patch} /api/staff/:id/permissions/add
+ * @description Add permissions to an employee profile.
+ * @access ADMIN ONLY
+ */
+router.patch(
+  '/:id/permissions/add',
+  requireAuth,
+  requireAdmin,
+  [body('permissions').isArray({ min: 1 }).withMessage('permissions array is required')],
+  validateRequest,
+  addEmployeePermissions
+);
+
+/**
+ * @api {patch} /api/staff/:id/permissions/remove
+ * @description Remove permissions from an employee profile (base permissions cannot be removed).
+ * @access ADMIN ONLY
+ */
+router.patch(
+  '/:id/permissions/remove',
+  requireAuth,
+  requireAdmin,
+  [body('permissions').isArray({ min: 1 }).withMessage('permissions array is required')],
+  validateRequest,
+  removeEmployeePermissions
+);
 
 /**
  * @api {get} /api/staff/:id
