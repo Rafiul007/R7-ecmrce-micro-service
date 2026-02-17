@@ -53,7 +53,11 @@ describe('createEmployeeProfile', () => {
 
   it('creates employee profile when data is valid', async () => {
     const mathSpy = jest.spyOn(Math, 'random').mockReturnValue(0.1234);
-    (User.findOne as jest.Mock).mockResolvedValue({ _id: 'user123' });
+    (User.findOne as jest.Mock).mockResolvedValue({
+      _id: 'user123',
+      roles: ['user'],
+      save: jest.fn()
+    });
     (EmployeeProfile.findOne as jest.Mock).mockResolvedValue(null);
     (EmployeeProfile.create as jest.Mock).mockResolvedValue({ _id: 'profile123' });
     const next = jest.fn();
@@ -140,7 +144,11 @@ describe('createEmployeeProfile', () => {
   });
 
   it('fails when profile already exists', async () => {
-    (User.findOne as jest.Mock).mockResolvedValue({ _id: 'user123' });
+    (User.findOne as jest.Mock).mockResolvedValue({
+      _id: 'user123',
+      roles: ['user'],
+      save: jest.fn()
+    });
     (EmployeeProfile.findOne as jest.Mock).mockResolvedValue({ _id: 'profile123' });
     const next = jest.fn();
 

@@ -4,6 +4,7 @@
   "workspaces": [
     "iam-service",
     "product-catalog-service",
+    "shift-service",
     "gateway"
   ],
   "devDependencies": {
@@ -16,8 +17,8 @@
     "build": "yarn workspaces foreach --topological run build",
     "start": "yarn workspaces foreach --parallel --topological run start",
 
-    "dev:all": "concurrently -n iam,product,gateway -c auto \"yarn workspace iam-service dev\" \"yarn workspace product-catalog-service dev\" \"yarn workspace gateway dev\"",
-    "start:all": "concurrently -n iam,product,gateway -c auto \"yarn workspace iam-service start\" \"yarn workspace product-catalog-service start\" \"yarn workspace gateway start\"",
-    "build:all": "concurrently -n iam,product,gateway -c auto \"yarn workspace iam-service build\" \"yarn workspace product-catalog-service build\" \"yarn workspace gateway build\""
+    "dev:all": "concurrently -n iam,product,shift,gateway -c auto \"yarn workspace iam-service dev\" \"yarn workspace product-catalog-service dev\" \"yarn workspace shift-service dev\" \"yarn workspace gateway dev\"",
+    "start:all": "concurrently -n iam,product,shift,gateway -c auto \"yarn workspace iam-service start\" \"yarn workspace product-catalog-service start\" \"yarn workspace shift-service start\" \"yarn workspace gateway start\"",
+    "build:all": "concurrently -n iam,product,shift,gateway -c auto \"yarn workspace iam-service build\" \"yarn workspace product-catalog-service build\" \"yarn workspace shift-service build\" \"yarn workspace gateway build\""
   }
 }

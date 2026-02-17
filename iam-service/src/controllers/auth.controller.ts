@@ -8,7 +8,26 @@ import {
   clearRefreshTokenCookie,
   getRefreshTokenFromCookie
 } from '../utils/cookies';
-import { User } from '../models/userModel';
+import { User, UserRole } from '../models/userModel';
+import { EmployeeProfile } from '../models/employeeModel';
+
+const pickPrimaryRole = (roles: string[]): string => {
+  if (roles.includes(UserRole.ADMIN)) return UserRole.ADMIN;
+  if (roles.includes(UserRole.EMPLOYEE)) return UserRole.EMPLOYEE;
+  return roles[0] || UserRole.USER;
+};
+
+const buildAuthPayload = async (user: { _id: unknown; email: string; roles: string[] }) => {
+  const employee = await EmployeeProfile.findOne({ userId: user._id }).select('_id employeeType');
+
+  return {
+    id: String(user._id),
+    email: user.email,
+    role: pickPrimaryRole(user.roles),
+    employeeId: employee?._id?.toString(),
+    employeeType: employee?.employeeType
+  };
+};
 
 export const registerUser = asyncHandler(async (req, res) => {
   const { fullName, email, password, phone, roles } = req.body;
@@ -30,11 +49,7 @@ export const registerUser = asyncHandler(async (req, res) => {
     roles: roles || ['user']
   });
 
-  const payload = {
-    id: user._id.toString(),
-    email: user.email,
-    role: user.roles[0]
-  };
+  const payload = await buildAuthPayload(user);
 
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
@@ -58,11 +73,7 @@ export const login = asyncHandler(async (req, res) => {
   const match = await bcrypt.compare(password, user.password);
   if (!match) throw new AppError('Invalid credentials', 401);
 
-  const payload = {
-    id: user._id.toString(),
-    email: user.email,
-    role: user.roles[0]
-  };
+  const payload = await buildAuthPayload(user);
 
   const accessToken = generateAccessToken(payload);
   const refreshToken = generateRefreshToken(payload);
@@ -83,8 +94,13 @@ export const refresh = asyncHandler(async (req, res) => {
 
   const payload = verifyRefreshToken(token);
 
-  const newAccess = generateAccessToken(payload);
-  const newRefresh = generateRefreshToken(payload);
+  const user = await User.findById(payload.id);
+  if (!user) throw new AppError('User not found', 404);
+
+  const refreshedPayload = await buildAuthPayload(user);
+
+  const newAccess = generateAccessToken(refreshedPayload);
+  const newRefresh = generateRefreshToken(refreshedPayload);
 
   setRefreshTokenCookie(res, newRefresh);
 

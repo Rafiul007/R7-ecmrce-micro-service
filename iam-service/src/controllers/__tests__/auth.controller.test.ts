@@ -1,5 +1,6 @@
 import { registerUser } from '../auth.controller';
 import { User } from '../../models/userModel';
+import { EmployeeProfile } from '../../models/employeeModel';
 import { generateAccessToken, generateRefreshToken } from '../../utils/jwt';
 import { setRefreshTokenCookie } from '../../utils/cookies';
 import bcrypt from 'bcryptjs';
@@ -13,6 +14,17 @@ jest.mock('../../models/userModel', () => ({
   User: {
     findOne: jest.fn(),
     create: jest.fn()
+  },
+  UserRole: {
+    USER: 'user',
+    ADMIN: 'admin',
+    EMPLOYEE: 'employee'
+  }
+}));
+
+jest.mock('../../models/employeeModel', () => ({
+  EmployeeProfile: {
+    findOne: jest.fn()
   }
 }));
 
@@ -52,6 +64,7 @@ const mockHash = bcrypt.hash as jest.Mock;
 const mockAccessToken = generateAccessToken as jest.Mock;
 const mockRefreshToken = generateRefreshToken as jest.Mock;
 const mockSetCookie = setRefreshTokenCookie as jest.Mock;
+const mockEmployeeFindOne = EmployeeProfile.findOne as jest.Mock;
 
 /* -------------------------------------------------------------------------- */
 /*                                   Tests                                    */
@@ -60,6 +73,9 @@ const mockSetCookie = setRefreshTokenCookie as jest.Mock;
 describe('Auth Controller — registerUser', () => {
   beforeEach(() => {
     jest.clearAllMocks();
+    mockEmployeeFindOne.mockReturnValue({
+      select: jest.fn().mockResolvedValue(null)
+    });
   });
 
   describe('when input is valid and email is new', () => {
@@ -79,6 +95,9 @@ describe('Auth Controller — registerUser', () => {
       const next = createMockNext();
 
       mockFindOne.mockResolvedValue(null);
+      mockEmployeeFindOne.mockReturnValue({
+        select: jest.fn().mockResolvedValue(null)
+      });
       mockHash.mockResolvedValue('hashed-password');
       mockCreate.mockResolvedValue({
         _id: 'user-id-123',
