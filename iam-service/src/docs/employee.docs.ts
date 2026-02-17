@@ -69,6 +69,11 @@
  *         employeeCode:
  *           type: string
  *           example: "RET-STR-M-4821"
+ *         permissions:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["shift:open", "shift:close", "shift:read", "cash:movement:create"]
  *         status:
  *           type: string
  *           enum: [active, suspended, terminated, resigned]
@@ -149,11 +154,6 @@
  *         taxId:
  *           type: string
  *           example: "TIN-123456"
- *         permissions:
- *           type: array
- *           items:
- *             type: string
- *           example: ["orders:read", "inventory:read"]
  *         systemAccessLevel:
  *           type: string
  *           enum: [low, medium, high]
@@ -170,6 +170,55 @@
  *           example: "Employee profile created"
  *         data:
  *           $ref: '#/components/schemas/EmployeeProfile'
+ *
+ *     EmployeePermissionsRequest:
+ *       type: object
+ *       required: [permissions]
+ *       properties:
+ *         permissions:
+ *           type: array
+ *           items:
+ *             type: string
+ *           example: ["shift:list", "cash:movement:read"]
+ *
+ *     EmployeePermissionsResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: "Employee permissions updated"
+ *         data:
+ *           type: object
+ *           properties:
+ *             permissions:
+ *               type: array
+ *               items:
+ *                 type: string
+ *               example: ["shift:open", "shift:close", "shift:read"]
+ *
+ *     EmployeePermissionsCatalogResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: "Employee permissions fetched"
+ *         data:
+ *           type: object
+ *           properties:
+ *             basePermissions:
+ *               type: array
+ *               items:
+ *                 type: string
+ *             availablePermissions:
+ *               type: array
+ *               items:
+ *                 type: string
  *
  * tags:
  *   - name: Employee
@@ -297,6 +346,101 @@
  *         description: Unauthorized
  *       403:
  *         description: Only admin can view employee details
+ *       404:
+ *         description: Employee not found
+ */
+
+/**
+ * @openapi
+ * /api/staff/permissions:
+ *   get:
+ *     summary: List available employee permissions and base permissions
+ *     tags: [Employee]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Employee permissions catalog fetched
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/EmployeePermissionsCatalogResponse'
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Only admin can view permissions catalog
+ */
+
+/**
+ * @openapi
+ * /api/staff/{id}/permissions/add:
+ *   patch:
+ *     summary: Add permissions to an employee
+ *     tags: [Employee]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/EmployeePermissionsRequest'
+ *     responses:
+ *       200:
+ *         description: Employee permissions updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/EmployeePermissionsResponse'
+ *       400:
+ *         description: Invalid permissions
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Only admin can manage employee permissions
+ *       404:
+ *         description: Employee not found
+ */
+
+/**
+ * @openapi
+ * /api/staff/{id}/permissions/remove:
+ *   patch:
+ *     summary: Remove permissions from an employee (base permissions cannot be removed)
+ *     tags: [Employee]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/EmployeePermissionsRequest'
+ *     responses:
+ *       200:
+ *         description: Employee permissions updated
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/EmployeePermissionsResponse'
+ *       400:
+ *         description: Invalid permissions
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Only admin can manage employee permissions
  *       404:
  *         description: Employee not found
  */

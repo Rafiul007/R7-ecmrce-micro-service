@@ -4,6 +4,12 @@ import { AuthRequest } from '../types/auth-request';
 import { asyncHandler } from '../utils/async-handler';
 import { AppError } from '../utils/error-handler';
 import { responseHandler } from '../utils/response-handler';
+import {
+  ALL_EMPLOYEE_PERMISSIONS,
+  BASE_EMPLOYEE_PERMISSIONS,
+  isValidEmployeePermission,
+  normalizePermissions
+} from '../helper/employeePermissions';
 
 export const generateEmployeeCode = (
   designation: string,
@@ -50,7 +56,6 @@ export const createEmployeeProfile = asyncHandler(async (req: AuthRequest, res) 
     taxId,
     isSalaryFrozen,
     supervisor,
-    permissions,
     systemAccessLevel,
     isSupervisor,
     skills,
@@ -120,7 +125,7 @@ export const createEmployeeProfile = asyncHandler(async (req: AuthRequest, res) 
     taxId,
     isSalaryFrozen,
     supervisor,
-    permissions,
+    permissions: Array.from(BASE_EMPLOYEE_PERMISSIONS),
     systemAccessLevel,
     isSupervisor,
     skills,
@@ -206,5 +211,114 @@ export const getEmployeeById = asyncHandler(async (req: AuthRequest, res) => {
     success: true,
     message: 'Employee details fetched',
     data: employee
+  });
+});
+
+/* -------------------------------------------------------------
+   PERMISSIONS
+------------------------------------------------------------- */
+const ensureAdmin = (admin: AuthRequest['user']) => {
+  if (!admin) {
+    throw new AppError('Unauthorized: No user in request', 401);
+  }
+
+  if (admin.role !== 'admin') {
+    throw new AppError('Only admin can manage employee permissions', 403);
+  }
+};
+
+const assertValidPermissions = (permissions: string[]) => {
+  const invalid = permissions.filter((permission) => !isValidEmployeePermission(permission));
+  if (invalid.length) {
+    throw new AppError(`Invalid permissions: ${invalid.join(', ')}`, 400);
+  }
+};
+
+export const listEmployeePermissions = asyncHandler(async (req: AuthRequest, res) => {
+  ensureAdmin(req.user);
+
+  responseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Employee permissions fetched',
+    data: {
+      basePermissions: Array.from(BASE_EMPLOYEE_PERMISSIONS),
+      availablePermissions: Array.from(ALL_EMPLOYEE_PERMISSIONS)
+    }
+  });
+});
+
+export const addEmployeePermissions = asyncHandler(async (req: AuthRequest, res) => {
+  ensureAdmin(req.user);
+
+  const { id } = req.params;
+  const { permissions } = req.body as { permissions: string[] };
+
+  if (!permissions || !Array.isArray(permissions) || permissions.length === 0) {
+    throw new AppError('permissions array is required', 400);
+  }
+
+  assertValidPermissions(permissions);
+
+  const employee = await EmployeeProfile.findById(id);
+  if (!employee) {
+    throw new AppError('Employee not found', 404);
+  }
+
+  const merged = normalizePermissions([
+    ...Array.from(BASE_EMPLOYEE_PERMISSIONS),
+    ...(employee.permissions || []),
+    ...permissions
+  ]);
+
+  employee.permissions = merged;
+  await employee.save();
+
+  responseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Employee permissions updated',
+    data: { permissions: employee.permissions }
+  });
+});
+
+export const removeEmployeePermissions = asyncHandler(async (req: AuthRequest, res) => {
+  ensureAdmin(req.user);
+
+  const { id } = req.params;
+  const { permissions } = req.body as { permissions: string[] };
+
+  if (!permissions || !Array.isArray(permissions) || permissions.length === 0) {
+    throw new AppError('permissions array is required', 400);
+  }
+
+  assertValidPermissions(permissions);
+
+  const baseSet = new Set(BASE_EMPLOYEE_PERMISSIONS);
+  const removingBase = permissions.filter((permission) => baseSet.has(permission as any));
+  if (removingBase.length) {
+    throw new AppError(`Base permissions cannot be removed: ${removingBase.join(', ')}`, 400);
+  }
+
+  const employee = await EmployeeProfile.findById(id);
+  if (!employee) {
+    throw new AppError('Employee not found', 404);
+  }
+
+  const nextPermissions = (employee.permissions || []).filter(
+    (permission) => !permissions.includes(permission)
+  );
+
+  employee.permissions = normalizePermissions([
+    ...Array.from(BASE_EMPLOYEE_PERMISSIONS),
+    ...nextPermissions
+  ]);
+  await employee.save();
+
+  responseHandler(res, {
+    statusCode: 200,
+    success: true,
+    message: 'Employee permissions updated',
+    data: { permissions: employee.permissions }
   });
 });
