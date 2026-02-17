@@ -19,6 +19,7 @@ export const requireAuth = (req: Request, _res: Response, next: NextFunction) =>
       id: payload.id,
       email: payload.email,
       role: payload.role,
+      employeeId: payload.employeeId,
       employeeType: payload.employeeType,
       customerType: payload.customerType
     };

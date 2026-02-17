@@ -11,6 +11,10 @@
  *     description: Category endpoints (via Product Catalog service)
  *   - name: Catalog Product
  *     description: Product endpoints (via Product Catalog service)
+ *   - name: Shift
+ *     description: Shift and drawer endpoints (via Shift service)
+ *   - name: Shift Cash
+ *     description: Cash in/out endpoints (via Shift service)
  *
  * components:
  *   securitySchemes:
@@ -124,6 +128,56 @@
  *           items:
  *             type: string
  *           example: ["apple", "ios", "5g", "flagship"]
+ *
+ *     ShiftOpenRequest:
+ *       type: object
+ *       required: [branchId, branchName, openingCash]
+ *       properties:
+ *         branchId:
+ *           type: string
+ *           example: "NYC-01"
+ *         branchName:
+ *           type: string
+ *           example: "Manhattan Flagship"
+ *         openingCash:
+ *           type: number
+ *           example: 10
+ *         openedByName:
+ *           type: string
+ *           example: "Rafiul"
+ *
+ *     ShiftCloseRequest:
+ *       type: object
+ *       required: [closingCash]
+ *       properties:
+ *         closingCash:
+ *           type: number
+ *           example: 125.5
+ *         cashSalesTotal:
+ *           type: number
+ *           example: 115.5
+ *         closedByName:
+ *           type: string
+ *           example: "Rafiul"
+ *
+ *     CashMovementCreateRequest:
+ *       type: object
+ *       required: [shiftId, type, amount]
+ *       properties:
+ *         shiftId:
+ *           type: string
+ *           example: "67d0c1f7a9f2a7d8a8f5a111"
+ *         type:
+ *           type: string
+ *           enum: [in, out]
+ *           example: in
+ *         amount:
+ *           type: number
+ *           example: 20
+ *         reason:
+ *           type: string
+ *           example: "Petty cash refill"
+ *
  */
 
 /**
@@ -507,4 +561,166 @@
  *     responses:
  *       200:
  *         description: Product deleted
+ */
+
+/**
+ * @openapi
+ * /shift/shifts/open:
+ *   post:
+ *     summary: Open a new shift
+ *     tags: [Shift]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ShiftOpenRequest'
+ *     responses:
+ *       201:
+ *         description: Shift opened
+ */
+
+/**
+ * @openapi
+ * /shift/shifts/{id}/close:
+ *   post:
+ *     summary: Close an open shift
+ *     tags: [Shift]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/ShiftCloseRequest'
+ *     responses:
+ *       200:
+ *         description: Shift closed
+ */
+
+/**
+ * @openapi
+ * /shift/shifts/active:
+ *   get:
+ *     summary: Get active shift
+ *     tags: [Shift]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: branchId
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: openedBy
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Active shift fetched
+ */
+
+/**
+ * @openapi
+ * /shift/shifts:
+ *   get:
+ *     summary: List shifts
+ *     tags: [Shift]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: branchId
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: status
+ *         schema:
+ *           type: string
+ *           enum: [open, closed]
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Shift list fetched
+ */
+
+/**
+ * @openapi
+ * /shift/shifts/{id}:
+ *   get:
+ *     summary: Get shift by id
+ *     tags: [Shift]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Shift fetched
+ */
+
+/**
+ * @openapi
+ * /shift/cash-movements:
+ *   post:
+ *     summary: Record cash in or cash out
+ *     tags: [Shift Cash]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CashMovementCreateRequest'
+ *     responses:
+ *       201:
+ *         description: Cash movement created
+ */
+
+/**
+ * @openapi
+ * /shift/cash-movements:
+ *   get:
+ *     summary: List cash movements for a shift
+ *     tags: [Shift Cash]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: query
+ *         name: shiftId
+ *         required: true
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: page
+ *         schema:
+ *           type: integer
+ *       - in: query
+ *         name: limit
+ *         schema:
+ *           type: integer
+ *     responses:
+ *       200:
+ *         description: Cash movements fetched
  */

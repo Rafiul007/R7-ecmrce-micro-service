@@ -1,5 +1,5 @@
 import { EmployeeProfile, EmployeeType } from '../models/employeeModel';
-import { User } from '../models/userModel';
+import { User, UserRole } from '../models/userModel';
 import { AuthRequest } from '../types/auth-request';
 import { asyncHandler } from '../utils/async-handler';
 import { AppError } from '../utils/error-handler';
@@ -131,6 +131,11 @@ export const createEmployeeProfile = asyncHandler(async (req: AuthRequest, res) 
     createdBy: admin.id,
     updatedBy: admin.id
   });
+
+  if (!user.roles.includes(UserRole.EMPLOYEE)) {
+    user.roles = Array.from(new Set([UserRole.EMPLOYEE, ...user.roles]));
+    await user.save();
+  }
 
   // 8. Response
   responseHandler(res, {
