@@ -2,45 +2,76 @@
  * @openapi
  * components:
  *   schemas:
+ *     ShiftBranch:
+ *       type: object
+ *       required: [branchName]
+ *       properties:
+ *         branchName:
+ *           type: string
+ *           example: "NYC Flagship"
+ *         branchLocation:
+ *           type: string
+ *           example: "5th Avenue, Manhattan"
+ *         branchManagerId:
+ *           type: string
+ *           example: "67d0c1f7a9f2a7d8a8f5b333"
+ *
+ *     ShiftDrawer:
+ *       type: object
+ *       required: [drawerName, branchId]
+ *       properties:
+ *         drawerName:
+ *           type: string
+ *           example: "Front Drawer 1"
+ *         branchId:
+ *           type: string
+ *           example: "67d0c1f7a9f2a7d8a8f5a999"
+ *
  *     Shift:
  *       type: object
+ *       description: |
+ *         A shift belongs to one drawer inside a branch.
+ *         A branch can have multiple drawers, but each drawer can only have one open shift at a time.
  *       properties:
  *         _id:
  *           type: string
  *           example: "67d0c1f7a9f2a7d8a8f5a111"
- *         branchId:
- *           type: string
- *           example: "NYC-01"
- *         branchName:
- *           type: string
- *           example: "Manhattan Flagship"
- *         employeeId:
- *           type: string
- *           example: "67d0c1f7a9f2a7d8a8f5b999"
+ *         branch:
+ *           $ref: '#/components/schemas/ShiftBranch'
+ *         drawer:
+ *           $ref: '#/components/schemas/ShiftDrawer'
  *         openedBy:
  *           type: string
  *           example: "67a111e2fbbdacb274d12f88"
- *         openedByName:
- *           type: string
- *           example: "Rafiul"
  *         openedAt:
  *           type: string
  *           format: date-time
+ *           example: "2026-03-11T09:00:00.000Z"
  *         openingCash:
  *           type: number
- *           example: 10
+ *           example: 150
  *         cashSalesTotal:
  *           type: number
- *           example: 0
+ *           example: 340.75
  *         cashInTotal:
  *           type: number
- *           example: 0
+ *           example: 20
  *         cashOutTotal:
  *           type: number
- *           example: 0
+ *           example: 15
+ *         closingCash:
+ *           type: number
+ *           example: 495.75
+ *         closedAt:
+ *           type: string
+ *           format: date-time
+ *           example: "2026-03-11T17:00:00.000Z"
+ *         closedBy:
+ *           type: string
+ *           example: "67a111e2fbbdacb274d12f88"
  *         expectedCash:
  *           type: number
- *           example: 10
+ *           example: 495.75
  *         overShort:
  *           type: number
  *           example: 0
@@ -48,63 +79,93 @@
  *           type: string
  *           enum: [open, closed]
  *           example: open
- *         closedAt:
- *           type: string
- *           format: date-time
- *         closingCash:
- *           type: number
- *           example: 10
  *         notes:
  *           type: string
- *           example: "Morning shift"
+ *           example: "Opening shift for front sales counter"
+ *         createdAt:
+ *           type: string
+ *           format: date-time
+ *           example: "2026-03-11T09:00:01.000Z"
+ *         updatedAt:
+ *           type: string
+ *           format: date-time
+ *           example: "2026-03-11T17:00:01.000Z"
  *
  *     OpenShiftRequest:
  *       type: object
- *       required: [branchId, branchName, openingCash]
+ *       required: [branch, drawer, openingCash]
+ *       description: |
+ *         Opens a shift for a specific drawer in a branch.
+ *         Use the drawer's branch id and drawer name together to identify the drawer.
+ *         A branch may have many drawers, but the same drawer cannot have more than one open shift.
  *       properties:
- *         branchId:
- *           type: string
- *           example: "NYC-01"
- *         branchName:
- *           type: string
- *           example: "Manhattan Flagship"
+ *         branch:
+ *           $ref: '#/components/schemas/ShiftBranch'
+ *         drawer:
+ *           $ref: '#/components/schemas/ShiftDrawer'
  *         openingCash:
  *           type: number
- *           example: 10
- *         openedByName:
- *           type: string
- *           example: "Rafiul"
+ *           example: 150
  *         notes:
  *           type: string
- *           example: "Opening drawer"
+ *           example: "Opening drawer before store launch"
  *
  *     CloseShiftRequest:
  *       type: object
  *       required: [closingCash]
+ *       description: |
+ *         Closes the selected open shift.
+ *         `cashSalesTotal` is optional. If not provided, the service keeps the current accumulated sales total.
  *       properties:
  *         closingCash:
  *           type: number
- *           example: 125.5
+ *           example: 495.75
  *         cashSalesTotal:
  *           type: number
- *           example: 115.5
- *         closedByName:
- *           type: string
- *           example: "Rafiul"
+ *           example: 340.75
  *         notes:
  *           type: string
  *           example: "Closed after reconciliation"
  *
+ *     ShiftListResponse:
+ *       type: object
+ *       properties:
+ *         shifts:
+ *           type: array
+ *           items:
+ *             $ref: '#/components/schemas/Shift'
+ *         pagination:
+ *           type: object
+ *           properties:
+ *             page:
+ *               type: integer
+ *               example: 1
+ *             limit:
+ *               type: integer
+ *               example: 20
+ *             total:
+ *               type: integer
+ *               example: 2
+ *             pages:
+ *               type: integer
+ *               example: 1
+ *
  * tags:
  *   - name: Shift
- *     description: Shift open/close and drawer summary
+ *     description: Manage drawer-based sales shifts inside branches
  */
 
 /**
  * @openapi
  * /shifts/open:
  *   post:
- *     summary: Open a new shift
+ *     summary: Open a new shift for a specific drawer
+ *     description: |
+ *       Use this endpoint when an employee starts working on a drawer.
+ *       Business rules enforced by the service:
+ *       - A branch can have multiple drawers.
+ *       - Each drawer can only have one open shift at a time.
+ *       - A user can only have one open shift at a time.
  *     tags: [Shift]
  *     security:
  *       - bearerAuth: []
@@ -114,9 +175,24 @@
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/OpenShiftRequest'
+ *           examples:
+ *             openNycDrawer:
+ *               summary: Open front drawer 1 in NYC branch
+ *               value:
+ *                 branch:
+ *                   branchName: "NYC Flagship"
+ *                   branchLocation: "5th Avenue, Manhattan"
+ *                   branchManagerId: "67d0c1f7a9f2a7d8a8f5b333"
+ *                 drawer:
+ *                   drawerName: "Front Drawer 1"
+ *                   branchId: "67d0c1f7a9f2a7d8a8f5a999"
+ *                 openingCash: 150
+ *                 notes: "Opening drawer before store launch"
  *     responses:
  *       201:
- *         description: Shift opened
+ *         description: Shift opened successfully
+ *       409:
+ *         description: There is already an open shift for this drawer, or the user already has an open shift
  */
 
 /**
@@ -124,6 +200,9 @@
  * /shifts/{id}/close:
  *   post:
  *     summary: Close an open shift
+ *     description: |
+ *       Use this endpoint to reconcile and close a specific shift.
+ *       The service computes `expectedCash` and `overShort` from opening cash, sales, cash-in, cash-out, and closing cash.
  *     tags: [Shift]
  *     security:
  *       - bearerAuth: []
@@ -139,16 +218,30 @@
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/CloseShiftRequest'
+ *           examples:
+ *             closeShift:
+ *               summary: Close shift after drawer reconciliation
+ *               value:
+ *                 closingCash: 495.75
+ *                 cashSalesTotal: 340.75
+ *                 notes: "Closed after end-of-day reconciliation"
  *     responses:
  *       200:
- *         description: Shift closed
+ *         description: Shift closed successfully
+ *       409:
+ *         description: Shift is already closed
  */
 
 /**
  * @openapi
  * /shifts/active:
  *   get:
- *     summary: Get active shift by branch or user
+ *     summary: Get an active shift by user or by drawer
+ *     description: |
+ *       Tester guidance:
+ *       - Use `openedBy` to find the active shift for a user.
+ *       - Use `branchId` and `drawerName` together to find the active shift for a drawer.
+ *       - Do not send only `branchId`, because a branch may have multiple drawers with active shifts.
  *     tags: [Shift]
  *     security:
  *       - bearerAuth: []
@@ -157,13 +250,22 @@
  *         name: branchId
  *         schema:
  *           type: string
+ *         description: Required together with `drawerName` when searching by drawer
+ *       - in: query
+ *         name: drawerName
+ *         schema:
+ *           type: string
+ *         description: Required together with `branchId` when searching by drawer
  *       - in: query
  *         name: openedBy
  *         schema:
  *           type: string
+ *         description: Use this to get the current open shift for a specific user
  *     responses:
  *       200:
- *         description: Active shift fetched
+ *         description: Active shift fetched successfully
+ *       400:
+ *         description: Missing or invalid query combination
  */
 
 /**
@@ -171,6 +273,9 @@
  * /shifts:
  *   get:
  *     summary: List shifts
+ *     description: |
+ *       Returns paginated shifts.
+ *       You can filter by branch, by drawer inside a branch, and by shift status.
  *     tags: [Shift]
  *     security:
  *       - bearerAuth: []
@@ -179,6 +284,12 @@
  *         name: branchId
  *         schema:
  *           type: string
+ *         description: Filter shifts for a branch
+ *       - in: query
+ *         name: drawerName
+ *         schema:
+ *           type: string
+ *         description: Filter shifts for a specific drawer. Must be used with `branchId`.
  *       - in: query
  *         name: status
  *         schema:
@@ -194,7 +305,7 @@
  *           type: integer
  *     responses:
  *       200:
- *         description: Shift list fetched
+ *         description: Shift list fetched successfully
  */
 
 /**
@@ -213,5 +324,7 @@
  *           type: string
  *     responses:
  *       200:
- *         description: Shift fetched
+ *         description: Shift fetched successfully
+ *       404:
+ *         description: Shift not found
  */

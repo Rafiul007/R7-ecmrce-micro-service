@@ -7,6 +7,83 @@ import { responseHandler } from '../utils/response-handler';
 import { Shift, ShiftStatus } from '../models/shiftModel';
 
 const roundMoney = (value: number) => Math.round(value * 100) / 100;
+const isObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === 'object' && value !== null && !Array.isArray(value);
+
+const toOptionalTrimmedString = (value: unknown) => {
+  if (typeof value !== 'string') return undefined;
+  const trimmed = value.trim();
+  return trimmed.length ? trimmed : undefined;
+};
+
+const parseNonNegativeNumber = (value: unknown, fieldName: string) => {
+  const parsed = Number(value);
+  if (!Number.isFinite(parsed) || parsed < 0) {
+    throw new AppError(`${fieldName} must be a non-negative number`, 400);
+  }
+
+  return roundMoney(parsed);
+};
+
+const normalizeBranch = (branch: unknown) => {
+  if (!isObject(branch)) {
+    throw new AppError('branch is required', 400);
+  }
+
+  const branchName = toOptionalTrimmedString(branch.branchName);
+  if (!branchName) {
+    throw new AppError('branch.branchName is required', 400);
+  }
+
+  return {
+    branchName,
+    branchLocation: toOptionalTrimmedString(branch.branchLocation),
+    branchManagerId: toOptionalTrimmedString(branch.branchManagerId)
+  };
+};
+
+const normalizeDrawer = (drawer: unknown) => {
+  if (!isObject(drawer)) {
+    throw new AppError('drawer is required', 400);
+  }
+
+  const drawerName = toOptionalTrimmedString(drawer.drawerName);
+  if (!drawerName) {
+    throw new AppError('drawer.drawerName is required', 400);
+  }
+
+  const branchId = toOptionalTrimmedString(drawer.branchId);
+  if (!branchId || !mongoose.isValidObjectId(branchId)) {
+    throw new AppError('drawer.branchId must be a valid id', 400);
+  }
+
+  return {
+    drawerName,
+    branchId: new mongoose.Types.ObjectId(branchId)
+  };
+};
+
+const applyDrawerFilters = (
+  filter: Record<string, unknown>,
+  branchId?: string,
+  drawerName?: string
+) => {
+  const normalizedDrawerName = toOptionalTrimmedString(drawerName);
+
+  if (branchId) {
+    if (!mongoose.isValidObjectId(branchId)) {
+      throw new AppError('branchId must be a valid id', 400);
+    }
+
+    filter['drawer.branchId'] = new mongoose.Types.ObjectId(branchId);
+  }
+
+  if (normalizedDrawerName) {
+    filter['drawer.drawerName'] = normalizedDrawerName;
+  }
+
+  return normalizedDrawerName;
+};
 
 const calculateExpectedCash = (shift: {
   openingCash: number;
@@ -18,22 +95,24 @@ const calculateExpectedCash = (shift: {
     shift.openingCash + shift.cashSalesTotal + shift.cashInTotal - shift.cashOutTotal
   );
 };
-
+// Open a new shift
 export const openShift = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?._id;
-  const employeeId = req.user?.employeeId;
   if (!userId) throw new AppError('Unauthorized', 401);
-  if (!employeeId) throw new AppError('Employee profile required to open shift', 403);
 
-  const { branchId, branchName, openingCash, openedByName, notes } = req.body;
+  const branch = normalizeBranch(req.body.branch);
+  const drawer = normalizeDrawer(req.body.drawer);
+  const openingCash = parseNonNegativeNumber(req.body.openingCash, 'openingCash');
+  const notes = toOptionalTrimmedString(req.body.notes);
 
-  const existingBranchShift = await Shift.findOne({
-    branchId,
+  const existingDrawerShift = await Shift.findOne({
+    'drawer.branchId': drawer.branchId,
+    'drawer.drawerName': drawer.drawerName,
     status: ShiftStatus.OPEN
   });
 
-  if (existingBranchShift) {
-    throw new AppError('Shift already open for this branch', 409);
+  if (existingDrawerShift) {
+    throw new AppError('Shift already open for this drawer', 409);
   }
 
   const existingUserShift = await Shift.findOne({
@@ -45,15 +124,13 @@ export const openShift = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError('User already has an open shift', 409);
   }
 
-  const expectedCash = roundMoney(Number(openingCash));
+  const expectedCash = openingCash;
 
   const shift = await Shift.create({
-    branchId,
-    branchName,
-    employeeId,
-    openingCash: Number(openingCash),
+    branch,
+    drawer,
+    openingCash,
     openedBy: new mongoose.Types.ObjectId(userId),
-    openedByName,
     expectedCash,
     notes
   });
@@ -65,7 +142,7 @@ export const openShift = asyncHandler(async (req: Request, res: Response) => {
     data: shift
   });
 });
-
+// Close shift controller
 export const closeShift = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?._id;
   if (!userId) throw new AppError('Unauthorized', 401);
@@ -73,7 +150,12 @@ export const closeShift = asyncHandler(async (req: Request, res: Response) => {
   const { id } = req.params;
   if (!mongoose.isValidObjectId(id)) throw new AppError('Invalid shift id', 400);
 
-  const { closingCash, cashSalesTotal, closedByName, notes } = req.body;
+  const closingCash = parseNonNegativeNumber(req.body.closingCash, 'closingCash');
+  const cashSalesTotal =
+    req.body.cashSalesTotal === undefined
+      ? undefined
+      : parseNonNegativeNumber(req.body.cashSalesTotal, 'cashSalesTotal');
+  const notes = toOptionalTrimmedString(req.body.notes);
 
   const shift = await Shift.findById(id);
   if (!shift) throw new AppError('Shift not found', 404);
@@ -82,8 +164,7 @@ export const closeShift = asyncHandler(async (req: Request, res: Response) => {
     throw new AppError('Shift already closed', 409);
   }
 
-  const effectiveCashSales =
-    typeof cashSalesTotal === 'number' ? cashSalesTotal : shift.cashSalesTotal;
+  const effectiveCashSales = cashSalesTotal === undefined ? shift.cashSalesTotal : cashSalesTotal;
 
   const expectedCash = calculateExpectedCash({
     openingCash: shift.openingCash,
@@ -92,17 +173,18 @@ export const closeShift = asyncHandler(async (req: Request, res: Response) => {
     cashOutTotal: shift.cashOutTotal
   });
 
-  const overShort = roundMoney(Number(closingCash) - expectedCash);
+  const overShort = roundMoney(closingCash - expectedCash);
 
-  shift.closingCash = Number(closingCash);
+  shift.closingCash = closingCash;
   shift.cashSalesTotal = effectiveCashSales;
   shift.expectedCash = expectedCash;
   shift.overShort = overShort;
   shift.status = ShiftStatus.CLOSED;
   shift.closedAt = new Date();
   shift.closedBy = new mongoose.Types.ObjectId(userId);
-  shift.closedByName = closedByName || shift.closedByName;
-  shift.notes = notes || shift.notes;
+  if (notes !== undefined) {
+    shift.notes = notes;
+  }
 
   await shift.save();
 
@@ -115,15 +197,31 @@ export const closeShift = asyncHandler(async (req: Request, res: Response) => {
 });
 
 export const getActiveShift = asyncHandler(async (req: Request, res: Response) => {
-  const { branchId, openedBy } = req.query as Record<string, string>;
+  const { branchId, drawerName, openedBy } = req.query as Record<string, string>;
 
-  if (!branchId && !openedBy) {
-    throw new AppError('branchId or openedBy query param is required', 400);
+  if (!branchId && !openedBy && !drawerName) {
+    throw new AppError('openedBy or drawer query params are required', 400);
   }
 
   const filter: Record<string, unknown> = { status: ShiftStatus.OPEN };
-  if (branchId) filter.branchId = branchId;
-  if (openedBy) filter.openedBy = openedBy;
+  const normalizedDrawerName = applyDrawerFilters(filter, branchId, drawerName);
+
+  if (normalizedDrawerName && !branchId) {
+    throw new AppError('branchId is required when drawerName is provided', 400);
+  }
+
+  if (branchId && !normalizedDrawerName && !openedBy) {
+    throw new AppError(
+      'drawerName is required when querying an active shift by branchId',
+      400
+    );
+  }
+  if (openedBy) {
+    if (!mongoose.isValidObjectId(openedBy)) {
+      throw new AppError('openedBy must be a valid id', 400);
+    }
+    filter.openedBy = new mongoose.Types.ObjectId(openedBy);
+  }
 
   const shift = await Shift.findOne(filter).lean();
   if (!shift) throw new AppError('Active shift not found', 404);
@@ -176,11 +274,20 @@ export const listShifts = asyncHandler(async (req: Request, res: Response) => {
   const limit = Math.min(100, Math.max(1, Number(req.query.limit ?? 20)));
   const skip = (page - 1) * limit;
 
-  const { branchId, status } = req.query as Record<string, string>;
+  const { branchId, drawerName, status } = req.query as Record<string, string>;
   const filter: Record<string, unknown> = {};
 
-  if (branchId) filter.branchId = branchId;
-  if (status) filter.status = status;
+  const normalizedDrawerName = applyDrawerFilters(filter, branchId, drawerName);
+  if (normalizedDrawerName && !branchId) {
+    throw new AppError('branchId is required when drawerName is provided', 400);
+  }
+
+  if (status) {
+    if (!Object.values(ShiftStatus).includes(status as ShiftStatus)) {
+      throw new AppError('Invalid status value', 400);
+    }
+    filter.status = status;
+  }
 
   const [items, total] = await Promise.all([
     Shift.find(filter).sort({ openedAt: -1 }).skip(skip).limit(limit).lean(),
