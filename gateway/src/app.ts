@@ -9,33 +9,19 @@ dotenv.config();
 
 const app = express();
 
-/* =======================
-   CORS (GLOBAL)
-======================= */
-app.use(
-  cors({
-    origin: 'http://localhost:3000',
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-  }),
-);
+const corsOptions = {
+  origin: ['http://localhost:3000', 'http://localhost:5173'],
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization'],
+};
 
+app.use(cors(corsOptions));
 app.use(morgan('dev'));
 
-/* =======================
-   SWAGGER DOCS
-======================= */
 setupSwagger(app);
-
-/* =======================
-   PROXY FIRST (RAW STREAM)
-======================= */
 app.use('/', proxyRoutes);
 
-/* =======================
-   BODY PARSERS AFTER PROXY
-======================= */
 app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
