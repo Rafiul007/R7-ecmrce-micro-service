@@ -93,16 +93,19 @@
  *
  *     OpenShiftRequest:
  *       type: object
- *       required: [branch, drawer, openingCash]
+ *       required: [branchName, drawerId, openingCash]
  *       description: |
  *         Opens a shift for a specific drawer in a branch.
- *         Use the drawer's branch id and drawer name together to identify the drawer.
- *         A branch may have many drawers, but the same drawer cannot have more than one open shift.
+ *         Branches and drawers can be created ahead of time through the `/branches` and `/drawers` endpoints.
+ *         Send the unique branch name and the drawer id.
+ *         The service loads the full branch and drawer details from the database automatically.
  *       properties:
- *         branch:
- *           $ref: '#/components/schemas/ShiftBranch'
- *         drawer:
- *           $ref: '#/components/schemas/ShiftDrawer'
+ *         branchName:
+ *           type: string
+ *           example: "NYC Flagship"
+ *         drawerId:
+ *           type: string
+ *           example: "67d0c1f7a9f2a7d8a8f5c111"
  *         openingCash:
  *           type: number
  *           example: 150
@@ -162,6 +165,7 @@
  *     summary: Open a new shift for a specific drawer
  *     description: |
  *       Use this endpoint when an employee starts working on a drawer.
+ *       Create branch and drawer records first if they do not already exist.
  *       Business rules enforced by the service:
  *       - A branch can have multiple drawers.
  *       - Each drawer can only have one open shift at a time.
@@ -179,13 +183,8 @@
  *             openNycDrawer:
  *               summary: Open front drawer 1 in NYC branch
  *               value:
- *                 branch:
- *                   branchName: "NYC Flagship"
- *                   branchLocation: "5th Avenue, Manhattan"
- *                   branchManagerId: "67d0c1f7a9f2a7d8a8f5b333"
- *                 drawer:
- *                   drawerName: "Front Drawer 1"
- *                   branchId: "67d0c1f7a9f2a7d8a8f5a999"
+ *                 branchName: "NYC Flagship"
+ *                 drawerId: "67d0c1f7a9f2a7d8a8f5c111"
  *                 openingCash: 150
  *                 notes: "Opening drawer before store launch"
  *     responses:

@@ -1,24 +1,17 @@
 import { Request, Response } from 'express';
 import mongoose from 'mongoose';
 
+import {
+  calculateExpectedCash,
+  roundMoney,
+  toObjectId,
+  validateObjectId
+} from '../helper/shift.helper';
 import { asyncHandler } from '../utils/async-handler';
 import { AppError } from '../utils/error-handler';
 import { responseHandler } from '../utils/response-handler';
 import { CashMovement, CashMovementType } from '../models/cashMovementModel';
 import { Shift, ShiftStatus } from '../models/shiftModel';
-
-const roundMoney = (value: number) => Math.round(value * 100) / 100;
-
-const calculateExpectedCash = (shift: {
-  openingCash: number;
-  cashSalesTotal: number;
-  cashInTotal: number;
-  cashOutTotal: number;
-}) => {
-  return roundMoney(
-    shift.openingCash + shift.cashSalesTotal + shift.cashInTotal - shift.cashOutTotal
-  );
-};
 
 export const createCashMovement = asyncHandler(async (req: Request, res: Response) => {
   const userId = req.user?._id;
@@ -26,7 +19,7 @@ export const createCashMovement = asyncHandler(async (req: Request, res: Respons
 
   const { shiftId, type, amount, reason, createdByName } = req.body;
 
-  if (!mongoose.isValidObjectId(shiftId)) throw new AppError('Invalid shift id', 400);
+  validateObjectId(shiftId, 'Invalid shift id');
 
   const shift = await Shift.findById(shiftId);
   if (!shift) throw new AppError('Shift not found', 404);
@@ -40,7 +33,7 @@ export const createCashMovement = asyncHandler(async (req: Request, res: Respons
     type,
     amount,
     reason,
-    createdBy: new mongoose.Types.ObjectId(userId),
+    createdBy: toObjectId(String(userId), 'createdBy'),
     createdByName
   });
 

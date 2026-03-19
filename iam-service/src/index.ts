@@ -1,6 +1,6 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors';
+// import cors from 'cors';
 import { connectDB } from './config/db';
 import { globalErrorHandler } from './utils/error-handler';
 import morgan from 'morgan';
@@ -14,14 +14,14 @@ connectDB();
 
 const app = express();
 
-app.use(
-  cors({
-    origin: ['http://localhost:4000', 'http://localhost:5173', 'http://localhost:3000'],
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-  })
-);
+// app.use(
+//   cors({
+//     origin: ['http://localhost:4000', 'http://localhost:5173', 'http://localhost:3000'],
+//     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
+//     allowedHeaders: ['Content-Type', 'Authorization'],
+//     credentials: true
+//   })
+// );
 
 app.use(morgan('dev'));
 app.use(express.json());

@@ -1,21 +1,12 @@
 import { body, param, query } from 'express-validator';
 
 export const openShiftValidation = [
-  body('branch').isObject().withMessage('branch is required'),
-  body('branch.branchName')
+  body('branchName')
     .isString()
     .trim()
     .notEmpty()
-    .withMessage('branch.branchName is required'),
-  body('branch.branchLocation').optional().isString().trim(),
-  body('branch.branchManagerId').optional().isString().trim(),
-  body('drawer').isObject().withMessage('drawer is required'),
-  body('drawer.drawerName')
-    .isString()
-    .trim()
-    .notEmpty()
-    .withMessage('drawer.drawerName is required'),
-  body('drawer.branchId').isMongoId().withMessage('drawer.branchId must be a valid id'),
+    .withMessage('branchName is required'),
+  body('drawerId').isMongoId().withMessage('drawerId must be a valid id'),
   body('openingCash').isFloat({ min: 0 }).withMessage('openingCash must be a number'),
   body('notes').optional().isString().trim().isLength({ max: 2000 })
 ];
