@@ -7,118 +7,132 @@
  *       properties:
  *         _id:
  *           type: string
- *           example: "67d0c1f7a9f2a7d8a8f5a999"
  *         branchName:
  *           type: string
- *           example: "NYC Flagship"
+ *           example: NYC Flagship
  *         branchLocation:
  *           type: string
- *           example: "5th Avenue, Manhattan"
+ *           example: 5th Avenue, Manhattan
  *         branchManagerId:
  *           type: string
  *           example: "67d0c1f7a9f2a7d8a8f5b333"
  *         createdAt:
  *           type: string
  *           format: date-time
- *           example: "2026-03-18T09:00:00.000Z"
  *         updatedAt:
  *           type: string
  *           format: date-time
- *           example: "2026-03-18T09:00:00.000Z"
- *
  *     CreateBranchRequest:
  *       type: object
  *       required: [branchName]
  *       properties:
  *         branchName:
  *           type: string
- *           example: "NYC Flagship"
  *         branchLocation:
  *           type: string
- *           example: "5th Avenue, Manhattan"
  *         branchManagerId:
  *           type: string
- *           example: "67d0c1f7a9f2a7d8a8f5b333"
- *
+ *     BranchResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Branch fetched successfully
+ *         data:
+ *           $ref: '#/components/schemas/Branch'
  *     BranchListResponse:
  *       type: object
  *       properties:
- *         branches:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Branch'
- *         pagination:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Branches fetched successfully
+ *         data:
  *           type: object
  *           properties:
- *             page:
- *               type: integer
- *               example: 1
- *             limit:
- *               type: integer
- *               example: 20
- *             total:
- *               type: integer
- *               example: 1
- *             pages:
- *               type: integer
- *               example: 1
- *
+ *             branches:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Branch'
+ *             pagination:
+ *               type: object
+ *               properties:
+ *                 page:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 total:
+ *                   type: integer
+ *                 pages:
+ *                   type: integer
  *     Drawer:
  *       type: object
  *       properties:
  *         _id:
  *           type: string
- *           example: "67d0c1f7a9f2a7d8a8f5c111"
  *         drawerName:
  *           type: string
- *           example: "Front Drawer 1"
  *         branchId:
  *           oneOf:
  *             - type: string
- *               example: "67d0c1f7a9f2a7d8a8f5a999"
  *             - $ref: '#/components/schemas/Branch'
  *         createdAt:
  *           type: string
  *           format: date-time
- *           example: "2026-03-18T09:10:00.000Z"
  *         updatedAt:
  *           type: string
  *           format: date-time
- *           example: "2026-03-18T09:10:00.000Z"
- *
  *     CreateDrawerRequest:
  *       type: object
  *       required: [drawerName, branchId]
  *       properties:
  *         drawerName:
  *           type: string
- *           example: "Front Drawer 1"
  *         branchId:
  *           type: string
- *           example: "67d0c1f7a9f2a7d8a8f5a999"
- *
+ *     DrawerResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Drawer fetched successfully
+ *         data:
+ *           $ref: '#/components/schemas/Drawer'
  *     DrawerListResponse:
  *       type: object
  *       properties:
- *         drawers:
- *           type: array
- *           items:
- *             $ref: '#/components/schemas/Drawer'
- *         pagination:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Branch drawers fetched successfully
+ *         data:
  *           type: object
  *           properties:
- *             page:
- *               type: integer
- *               example: 1
- *             limit:
- *               type: integer
- *               example: 20
- *             total:
- *               type: integer
- *               example: 1
- *             pages:
- *               type: integer
- *               example: 1
+ *             drawers:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/Drawer'
+ *             pagination:
+ *               type: object
+ *               properties:
+ *                 page:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 total:
+ *                   type: integer
+ *                 pages:
+ *                   type: integer
  *
  * tags:
  *   - name: Branch
@@ -141,19 +155,26 @@
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/CreateBranchRequest'
- *           examples:
- *             nycBranch:
- *               summary: Create NYC branch
- *               value:
- *                 branchName: "NYC Flagship"
- *                 branchLocation: "5th Avenue, Manhattan"
- *                 branchManagerId: "67d0c1f7a9f2a7d8a8f5b333"
  *     responses:
  *       201:
  *         description: Branch created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/BranchResponse'
+ *                 - type: object
+ *                   properties:
+ *                     message:
+ *                       example: Branch created successfully
+ *       400:
+ *         description: Validation error
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  *       409:
  *         description: Branch already exists
- *
  *   get:
  *     summary: List branches
  *     tags: [Branch]
@@ -197,7 +218,13 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Branch'
+ *               $ref: '#/components/schemas/BranchResponse'
+ *       400:
+ *         description: Invalid branch id
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Branch not found
  */
@@ -217,20 +244,28 @@
  *         application/json:
  *           schema:
  *             $ref: '#/components/schemas/CreateDrawerRequest'
- *           examples:
- *             frontDrawer:
- *               summary: Create a front counter drawer
- *               value:
- *                 drawerName: "Front Drawer 1"
- *                 branchId: "67d0c1f7a9f2a7d8a8f5a999"
  *     responses:
  *       201:
  *         description: Drawer created successfully
+ *         content:
+ *           application/json:
+ *             schema:
+ *               allOf:
+ *                 - $ref: '#/components/schemas/DrawerResponse'
+ *                 - type: object
+ *                   properties:
+ *                     message:
+ *                       example: Drawer created successfully
+ *       400:
+ *         description: Validation error or invalid branch id
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Branch not found
  *       409:
  *         description: Drawer already exists for this branch
- *
  */
 
 /**
@@ -238,7 +273,6 @@
  * /drawers/branch/{branchId}:
  *   get:
  *     summary: List all drawers for a branch
- *     description: Returns paginated drawers for one specific branch only.
  *     tags: [Drawer]
  *     security:
  *       - bearerAuth: []
@@ -248,7 +282,6 @@
  *         required: true
  *         schema:
  *           type: string
- *         description: Branch id whose drawers should be returned
  *       - in: query
  *         name: page
  *         schema:
@@ -264,6 +297,12 @@
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/DrawerListResponse'
+ *       400:
+ *         description: Invalid branch id
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Branch not found
  */
@@ -288,7 +327,13 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/Drawer'
+ *               $ref: '#/components/schemas/DrawerResponse'
+ *       400:
+ *         description: Invalid drawer id
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  *       404:
  *         description: Drawer not found
  */

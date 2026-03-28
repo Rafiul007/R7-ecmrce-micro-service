@@ -7,47 +7,88 @@
  *       properties:
  *         _id:
  *           type: string
- *           example: "67d0c1f7a9f2a7d8a8f5a222"
  *         shift:
  *           type: string
- *           example: "67d0c1f7a9f2a7d8a8f5a111"
  *         type:
  *           type: string
  *           enum: [in, out]
- *           example: in
  *         amount:
  *           type: number
- *           example: 20
  *         reason:
  *           type: string
- *           example: "Petty cash refill"
+ *         createdBy:
+ *           type: string
  *         createdByName:
  *           type: string
- *           example: "Rafiul"
  *         createdAt:
  *           type: string
  *           format: date-time
- *
  *     CashMovementRequest:
  *       type: object
  *       required: [shiftId, type, amount]
  *       properties:
  *         shiftId:
  *           type: string
- *           example: "67d0c1f7a9f2a7d8a8f5a111"
  *         type:
  *           type: string
  *           enum: [in, out]
- *           example: out
  *         amount:
  *           type: number
- *           example: 15
+ *           minimum: 0.01
  *         reason:
  *           type: string
- *           example: "Cash payout"
  *         createdByName:
  *           type: string
- *           example: "Rafiul"
+ *     CashMovementCreateResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Cash movement recorded successfully
+ *         data:
+ *           type: object
+ *           properties:
+ *             movement:
+ *               $ref: '#/components/schemas/CashMovement'
+ *             shiftSummary:
+ *               type: object
+ *               properties:
+ *                 cashInTotal:
+ *                   type: number
+ *                 cashOutTotal:
+ *                   type: number
+ *                 expectedCash:
+ *                   type: number
+ *     CashMovementListResponse:
+ *       type: object
+ *       properties:
+ *         success:
+ *           type: boolean
+ *           example: true
+ *         message:
+ *           type: string
+ *           example: Cash movements fetched successfully
+ *         data:
+ *           type: object
+ *           properties:
+ *             movements:
+ *               type: array
+ *               items:
+ *                 $ref: '#/components/schemas/CashMovement'
+ *             pagination:
+ *               type: object
+ *               properties:
+ *                 page:
+ *                   type: integer
+ *                 limit:
+ *                   type: integer
+ *                 total:
+ *                   type: integer
+ *                 pages:
+ *                   type: integer
  *
  * tags:
  *   - name: Cash Movement
@@ -71,11 +112,20 @@
  *     responses:
  *       201:
  *         description: Cash movement created
- */
-
-/**
- * @openapi
- * /cash-movements:
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CashMovementCreateResponse'
+ *       400:
+ *         description: Validation error or invalid shift id
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
+ *       404:
+ *         description: Shift not found
+ *       409:
+ *         description: Cannot add movement to a closed shift
  *   get:
  *     summary: List cash movements for a shift
  *     tags: [Cash Movement]
@@ -98,4 +148,14 @@
  *     responses:
  *       200:
  *         description: Cash movements fetched
+ *         content:
+ *           application/json:
+ *             schema:
+ *               $ref: '#/components/schemas/CashMovementListResponse'
+ *       400:
+ *         description: Missing or invalid shift id
+ *       401:
+ *         description: Unauthorized
+ *       403:
+ *         description: Forbidden
  */

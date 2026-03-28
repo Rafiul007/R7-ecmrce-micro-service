@@ -21,7 +21,6 @@
  *         country:
  *           type: string
  *           example: "BD"
- *
  *     CustomerProfile:
  *       type: object
  *       properties:
@@ -51,7 +50,6 @@
  *         updatedAt:
  *           type: string
  *           format: date-time
- *
  *     CreateCustomerRequest:
  *       type: object
  *       required: [email, address, gender, dateOfBirth]
@@ -75,7 +73,6 @@
  *           type: string
  *           format: date
  *           example: "1996-08-14"
- *
  *     CustomerProfileResponse:
  *       type: object
  *       properties:
@@ -84,7 +81,7 @@
  *           example: true
  *         message:
  *           type: string
- *           example: "Customer profile created"
+ *           example: Customer profile created
  *         data:
  *           $ref: '#/components/schemas/CustomerProfile'
  *
@@ -98,8 +95,9 @@
  * /api/customer/register:
  *   post:
  *     summary: Create a customer profile
- *     description: Create a customer profile for an existing user by email.
+ *     description: Creates a customer profile for an existing user identified by email.
  *     tags: [Customer]
+ *     security: []
  *     requestBody:
  *       required: true
  *       content:
@@ -114,7 +112,7 @@
  *             schema:
  *               $ref: '#/components/schemas/CustomerProfileResponse'
  *       400:
- *         description: Validation error or incomplete address
+ *         description: Validation error, incomplete address, or profile already exists
  *       404:
  *         description: User not found
  */

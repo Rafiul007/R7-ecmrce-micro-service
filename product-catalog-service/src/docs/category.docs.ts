@@ -7,52 +7,39 @@
  *       properties:
  *         _id:
  *           type: string
- *           example: "67c06e080fbf1d2c6e3b9e12"
  *         name:
  *           type: string
- *           example: "Electronics"
  *         slug:
  *           type: string
- *           example: "electronics"
  *         description:
  *           type: string
- *           example: "All electronic and smart devices"
  *         parent:
  *           type: string
  *           nullable: true
- *           example: null
  *         isActive:
  *           type: boolean
- *           example: true
  *         createdBy:
  *           type: string
- *           example: "67bfdfb80bae4cb0f09a496b"
  *         updatedBy:
  *           type: string
- *           example: "67bfdfb80bae4cb0f09a496b"
  *         createdAt:
  *           type: string
  *           format: date-time
  *         updatedAt:
  *           type: string
  *           format: date-time
- *
  *     CreateCategoryRequest:
  *       type: object
- *       required:
- *         - name
+ *       required: [name]
  *       properties:
  *         name:
  *           type: string
- *           example: "Smartphones"
+ *           example: Smartphones
  *         description:
  *           type: string
- *           example: "Android and iOS mobile phones"
  *         parent:
  *           type: string
  *           nullable: true
- *           example: "67c06e080fbf1d2c6e3b9e12"
- *
  *     CategoryResponse:
  *       type: object
  *       properties:
@@ -61,10 +48,9 @@
  *           example: true
  *         message:
  *           type: string
- *           example: "Category created successfully"
+ *           example: Category fetched
  *         data:
  *           $ref: '#/components/schemas/Category'
- *
  *     CategoryPaginationResponse:
  *       type: object
  *       properties:
@@ -73,7 +59,7 @@
  *           example: true
  *         message:
  *           type: string
- *           example: "Categories fetched"
+ *           example: Categories fetched
  *         data:
  *           type: object
  *           properties:
@@ -86,16 +72,12 @@
  *               properties:
  *                 page:
  *                   type: number
- *                   example: 1
  *                 limit:
  *                   type: number
- *                   example: 20
  *                 total:
  *                   type: number
- *                   example: 52
  *                 pages:
  *                   type: number
- *                   example: 3
  *
  * tags:
  *   - name: Category
@@ -122,47 +104,50 @@
  *         content:
  *           application/json:
  *             schema:
- *               $ref: '#/components/schemas/CategoryResponse'
+ *               allOf:
+ *                 - $ref: '#/components/schemas/CategoryResponse'
+ *                 - type: object
+ *                   properties:
+ *                     message:
+ *                       example: Category created successfully
  *       400:
- *         description: Validation error
+ *         description: Validation error, invalid parent id, or duplicate category
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - Missing Permission
+ *         description: Forbidden
+ *       404:
+ *         description: Parent category not found
  */
 
 /**
  * @openapi
  * /categories:
  *   get:
- *     summary: Get all categories (supports filtering, sorting, pagination)
+ *     summary: Get all categories
  *     tags: [Category]
  *     parameters:
  *       - in: query
  *         name: search
  *         schema:
  *           type: string
- *         description: Search by name or slug
  *       - in: query
  *         name: parent
  *         schema:
  *           type: string
- *         description: Filter by parent category id or 'root'
+ *         description: Parent category id, or one of `root`, `null`, or an empty string for top-level categories.
  *       - in: query
  *         name: active
  *         schema:
  *           type: boolean
- *         description: Filter active/inactive categories
  *       - in: query
  *         name: page
  *         schema:
  *           type: integer
- *           example: 1
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *           example: 20
  *       - in: query
  *         name: sortBy
  *         schema:
@@ -173,7 +158,16 @@
  *         schema:
  *           type: string
  *           enum: [asc, desc, 1, -1]
- *
+ *       - in: query
+ *         name: fields
+ *         schema:
+ *           type: string
+ *         description: Comma-separated field whitelist.
+ *       - in: query
+ *         name: include
+ *         schema:
+ *           type: string
+ *         description: Supports `childrenCount`.
  *     responses:
  *       200:
  *         description: Category list returned
@@ -202,6 +196,8 @@
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/CategoryResponse'
+ *       400:
+ *         description: Invalid category id
  *       404:
  *         description: Category not found
  */
@@ -222,13 +218,17 @@
  *           type: string
  *     responses:
  *       200:
- *         description: Status changed
+ *         description: Category status changed
  *         content:
  *           application/json:
  *             schema:
  *               $ref: '#/components/schemas/CategoryResponse'
+ *       400:
+ *         description: Invalid category id
  *       401:
  *         description: Unauthorized
  *       403:
- *         description: Forbidden - No permission
+ *         description: Forbidden
+ *       404:
+ *         description: Category not found
  */

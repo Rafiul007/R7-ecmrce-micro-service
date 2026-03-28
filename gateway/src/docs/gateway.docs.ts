@@ -2,19 +2,21 @@
  * @openapi
  * tags:
  *   - name: IAM Auth
- *     description: Authentication endpoints (via IAM service)
+ *     description: Authentication endpoints proxied to the IAM service
  *   - name: IAM Customer
- *     description: Customer profile endpoints (via IAM service)
+ *     description: Customer profile endpoints proxied to the IAM service
  *   - name: IAM Employee
- *     description: Employee management endpoints (via IAM service)
+ *     description: Employee management endpoints proxied to the IAM service
  *   - name: Catalog Category
- *     description: Category endpoints (via Product Catalog service)
+ *     description: Category endpoints proxied to the Product Catalog service
  *   - name: Catalog Product
- *     description: Product endpoints (via Product Catalog service)
+ *     description: Product endpoints proxied to the Product Catalog service
+ *   - name: Shift Branch
+ *     description: Branch and drawer endpoints proxied to the Shift service
  *   - name: Shift
- *     description: Shift and drawer endpoints (via Shift service)
+ *     description: Shift endpoints proxied to the Shift service
  *   - name: Shift Cash
- *     description: Cash in/out endpoints (via Shift service)
+ *     description: Cash movement endpoints proxied to the Shift service
  *
  * components:
  *   securitySchemes:
@@ -22,7 +24,6 @@
  *       type: http
  *       scheme: bearer
  *       bearerFormat: JWT
- *
  *   schemas:
  *     AuthRegisterRequest:
  *       type: object
@@ -30,24 +31,19 @@
  *       properties:
  *         fullName:
  *           type: string
- *           example: "Super Admin"
  *         email:
  *           type: string
  *           format: email
- *           example: "super-admin@gmail.com"
  *         password:
  *           type: string
- *           example: "123456"
+ *           minLength: 6
  *         phone:
  *           type: string
- *           example: "0000001"
  *         roles:
  *           type: array
  *           items:
  *             type: string
  *             enum: [user, admin, employee]
- *           example: ["admin"]
- *
  *     AuthLoginRequest:
  *       type: object
  *       required: [email, password]
@@ -55,80 +51,38 @@
  *         email:
  *           type: string
  *           format: email
- *           example: "super-admin@gmail.com"
  *         password:
  *           type: string
- *           example: "123456"
- *
- *     CategoryCreateRequest:
+ *     CustomerCreateRequest:
  *       type: object
- *       required: [name]
+ *       required: [email, address, gender, dateOfBirth]
  *       properties:
- *         name:
+ *         email:
  *           type: string
- *           example: "Smartphones"
- *         description:
+ *           format: email
+ *         address:
+ *           type: object
+ *           required: [street, city, country]
+ *           properties:
+ *             street:
+ *               type: string
+ *             city:
+ *               type: string
+ *             state:
+ *               type: string
+ *             zipCode:
+ *               type: string
+ *             country:
+ *               type: string
+ *         customerType:
  *           type: string
- *           example: "Android and iOS mobile phones"
- *         parent:
+ *           enum: [regular, vip, wholesale]
+ *         gender:
  *           type: string
- *           nullable: true
- *           example: null
- *
- *     ProductCreateRequest:
- *       type: object
- *       required: [name, price, stock, category]
- *       properties:
- *         name:
+ *           enum: [male, female, other]
+ *         dateOfBirth:
  *           type: string
- *           example: "iPhone 15 Pro Max"
- *         description:
- *           type: string
- *           example: "6.7-inch OLED, A17 Pro, 48MP main camera."
- *         price:
- *           type: number
- *           example: 1299
- *         discountPrice:
- *           type: number
- *           example: 1199
- *         sku:
- *           type: string
- *           example: "IP15PM-256-BLU"
- *         stock:
- *           type: integer
- *           example: 30
- *         category:
- *           type: string
- *           description: Category id
- *           example: "67c06e080fbf1d2c6e3b9e12"
- *         images:
- *           type: array
- *           items:
- *             type: string
- *           example: ["ip15pm-front.jpg", "ip15pm-back.jpg"]
- *         variants:
- *           type: array
- *           items:
- *             type: object
- *             properties:
- *               name:
- *                 type: string
- *                 example: "Storage"
- *               value:
- *                 type: string
- *                 example: "256GB"
- *               additionalPrice:
- *                 type: number
- *                 example: 0
- *               stock:
- *                 type: integer
- *                 example: 10
- *         tags:
- *           type: array
- *           items:
- *             type: string
- *           example: ["apple", "ios", "5g", "flagship"]
- *
+ *           format: date
  *     EmployeePermissionsRequest:
  *       type: object
  *       required: [permissions]
@@ -137,96 +91,210 @@
  *           type: array
  *           items:
  *             type: string
- *           example: ["shift:list", "cash:movement:read"]
- *
- *     EmployeePermissionsResponse:
+ *     EmployeeCreateRequest:
  *       type: object
+ *       required:
+ *         - email
+ *         - employeeType
+ *         - phone
+ *         - gender
+ *         - dateOfBirth
+ *         - emergencyContact
+ *         - employmentType
+ *         - designation
+ *         - department
+ *         - joiningDate
+ *         - salary
+ *         - salaryCurrency
+ *         - salaryFrequency
  *       properties:
- *         success:
- *           type: boolean
- *           example: true
- *         message:
+ *         email:
  *           type: string
- *           example: "Employee permissions updated"
- *         data:
+ *           format: email
+ *         employeeType:
+ *           type: string
+ *           enum: [manager, staff, delivery, support]
+ *         phone:
+ *           type: string
+ *         gender:
+ *           type: string
+ *           enum: [male, female, other]
+ *         dateOfBirth:
+ *           type: string
+ *           format: date
+ *         address:
  *           type: object
- *           properties:
- *             permissions:
- *               type: array
- *               items:
- *                 type: string
- *               example: ["shift:open", "shift:close", "shift:read"]
- *
- *     EmployeePermissionsCatalogResponse:
- *       type: object
- *       properties:
- *         success:
- *           type: boolean
- *           example: true
- *         message:
- *           type: string
- *           example: "Employee permissions fetched"
- *         data:
+ *         emergencyContact:
  *           type: object
+ *           required: [name, phone, relation]
  *           properties:
- *             basePermissions:
- *               type: array
- *               items:
- *                 type: string
- *             availablePermissions:
- *               type: array
- *               items:
- *                 type: string
- *
- *     ShiftOpenRequest:
- *       type: object
- *       required: [branchId, branchName, openingCash]
- *       properties:
- *         branchId:
+ *             name:
+ *               type: string
+ *             phone:
+ *               type: string
+ *             relation:
+ *               type: string
+ *         employmentType:
  *           type: string
- *           example: "NYC-01"
+ *           enum: [full_time, part_time, contract, intern]
+ *         designation:
+ *           type: string
+ *         department:
+ *           type: string
+ *         joiningDate:
+ *           type: string
+ *           format: date
+ *         salary:
+ *           type: number
+ *         salaryCurrency:
+ *           type: string
+ *         salaryFrequency:
+ *           type: string
+ *           enum: [hourly, weekly, monthly]
+ *         bankAccount:
+ *           type: string
+ *         taxId:
+ *           type: string
+ *         isSalaryFrozen:
+ *           type: boolean
+ *         supervisor:
+ *           type: string
+ *         systemAccessLevel:
+ *           type: string
+ *         isSupervisor:
+ *           type: boolean
+ *         skills:
+ *           type: array
+ *           items:
+ *             type: string
+ *         performanceRating:
+ *           type: number
+ *         lastPromotionDate:
+ *           type: string
+ *           format: date
+ *         workShift:
+ *           type: string
+ *         leaveBalance:
+ *           type: number
+ *     CategoryCreateRequest:
+ *       type: object
+ *       required: [name]
+ *       properties:
+ *         name:
+ *           type: string
+ *         description:
+ *           type: string
+ *         parent:
+ *           type: string
+ *           nullable: true
+ *     ProductCreateRequest:
+ *       type: object
+ *       required: [name, price, stock, category]
+ *       properties:
+ *         name:
+ *           type: string
+ *         slug:
+ *           type: string
+ *         description:
+ *           type: string
+ *         price:
+ *           type: number
+ *         discountPrice:
+ *           type: number
+ *         sku:
+ *           type: string
+ *         barcode:
+ *           type: string
+ *         stock:
+ *           type: integer
+ *         reorderLevel:
+ *           type: integer
+ *         unit:
+ *           type: string
+ *         category:
+ *           type: string
+ *         images:
+ *           type: array
+ *           items:
+ *             type: string
+ *         variants:
+ *           type: array
+ *           items:
+ *             type: object
+ *         availableInStore:
+ *           type: boolean
+ *         availableOnline:
+ *           type: boolean
+ *         weightKg:
+ *           type: number
+ *         dimensions:
+ *           type: object
+ *         taxRate:
+ *           type: number
+ *         tags:
+ *           type: array
+ *           items:
+ *             type: string
+ *         metaTitle:
+ *           type: string
+ *         metaDescription:
+ *           type: string
+ *     CreateBranchRequest:
+ *       type: object
+ *       required: [branchName]
+ *       properties:
  *         branchName:
  *           type: string
- *           example: "Manhattan Flagship"
+ *         branchLocation:
+ *           type: string
+ *         branchManagerId:
+ *           type: string
+ *     CreateDrawerRequest:
+ *       type: object
+ *       required: [drawerName, branchId]
+ *       properties:
+ *         drawerName:
+ *           type: string
+ *         branchId:
+ *           type: string
+ *     ShiftOpenRequest:
+ *       type: object
+ *       required: [branchName, drawerId, openingCash]
+ *       properties:
+ *         branchName:
+ *           type: string
+ *         drawerId:
+ *           type: string
  *         openingCash:
  *           type: number
- *           example: 10
- *         openedByName:
+ *         notes:
  *           type: string
- *           example: "Rafiul"
- *
  *     ShiftCloseRequest:
  *       type: object
  *       required: [closingCash]
  *       properties:
  *         closingCash:
  *           type: number
- *           example: 125.5
  *         cashSalesTotal:
  *           type: number
- *           example: 115.5
- *         closedByName:
+ *         notes:
  *           type: string
- *           example: "Rafiul"
- *
  *     CashMovementCreateRequest:
  *       type: object
  *       required: [shiftId, type, amount]
  *       properties:
  *         shiftId:
  *           type: string
- *           example: "67d0c1f7a9f2a7d8a8f5a111"
  *         type:
  *           type: string
  *           enum: [in, out]
- *           example: in
  *         amount:
  *           type: number
- *           example: 20
+ *           minimum: 0.01
  *         reason:
  *           type: string
- *           example: "Petty cash refill"
- *
+ *         createdByName:
+ *           type: string
  */
 
 /**
@@ -296,37 +364,7 @@
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required: [email, address, gender, dateOfBirth]
- *             properties:
- *               email:
- *                 type: string
- *                 example: "jane.doe@example.com"
- *               address:
- *                 type: object
- *                 required: [street, city, country]
- *                 properties:
- *                   street:
- *                     type: string
- *                     example: "House 12, Road 3"
- *                   city:
- *                     type: string
- *                     example: "Dhaka"
- *                   country:
- *                     type: string
- *                     example: "BD"
- *               customerType:
- *                 type: string
- *                 enum: [regular, vip, wholesale]
- *                 example: "vip"
- *               gender:
- *                 type: string
- *                 enum: [male, female, other]
- *                 example: "female"
- *               dateOfBirth:
- *                 type: string
- *                 format: date
- *                 example: "1996-08-14"
+ *             $ref: '#/components/schemas/CustomerCreateRequest'
  *     responses:
  *       201:
  *         description: Customer profile created
@@ -336,7 +374,7 @@
  * @openapi
  * /iam/api/staff/register:
  *   post:
- *     summary: Create employee profile (admin only)
+ *     summary: Create employee profile
  *     tags: [IAM Employee]
  *     security:
  *       - bearerAuth: []
@@ -345,77 +383,7 @@
  *       content:
  *         application/json:
  *           schema:
- *             type: object
- *             required:
- *               - email
- *               - employeeType
- *               - phone
- *               - gender
- *               - dateOfBirth
- *               - emergencyContact
- *               - employmentType
- *               - designation
- *               - department
- *               - joiningDate
- *               - salary
- *               - salaryCurrency
- *               - salaryFrequency
- *             properties:
- *               email:
- *                 type: string
- *                 example: "manager1@example.com"
- *               employeeType:
- *                 type: string
- *                 enum: [manager, staff, delivery, support]
- *                 example: "manager"
- *               phone:
- *                 type: string
- *                 example: "+8801712340001"
- *               gender:
- *                 type: string
- *                 enum: [male, female, other]
- *                 example: "male"
- *               dateOfBirth:
- *                 type: string
- *                 format: date
- *                 example: "1990-01-01"
- *               emergencyContact:
- *                 type: object
- *                 required: [name, phone, relation]
- *                 properties:
- *                   name:
- *                     type: string
- *                     example: "John Rahman"
- *                   phone:
- *                     type: string
- *                     example: "+8801712345678"
- *                   relation:
- *                     type: string
- *                     example: "brother"
- *               employmentType:
- *                 type: string
- *                 enum: [full_time, part_time, contract, intern]
- *                 example: "full_time"
- *               designation:
- *                 type: string
- *                 example: "Store Manager"
- *               department:
- *                 type: string
- *                 example: "Retail"
- *               joiningDate:
- *                 type: string
- *                 format: date
- *                 example: "2025-01-10"
- *               salary:
- *                 type: number
- *                 example: 65000
- *               salaryCurrency:
- *                 type: string
- *                 example: "BDT"
- *               salaryFrequency:
- *                 type: string
- *                 enum: [hourly, weekly, monthly]
- *                 example: "monthly"
+ *             $ref: '#/components/schemas/EmployeeCreateRequest'
  *     responses:
  *       201:
  *         description: Employee profile created
@@ -425,7 +393,7 @@
  * @openapi
  * /iam/api/staff:
  *   get:
- *     summary: List employees (admin only)
+ *     summary: List employees
  *     tags: [IAM Employee]
  *     security:
  *       - bearerAuth: []
@@ -434,12 +402,18 @@
  *         name: page
  *         schema:
  *           type: integer
- *         example: 1
  *       - in: query
  *         name: limit
  *         schema:
  *           type: integer
- *         example: 20
+ *       - in: query
+ *         name: department
+ *         schema:
+ *           type: string
+ *       - in: query
+ *         name: designation
+ *         schema:
+ *           type: string
  *     responses:
  *       200:
  *         description: Employee list fetched
@@ -449,7 +423,7 @@
  * @openapi
  * /iam/api/staff/{id}:
  *   get:
- *     summary: Get a single employee (admin only)
+ *     summary: Get a single employee
  *     tags: [IAM Employee]
  *     security:
  *       - bearerAuth: []
@@ -468,24 +442,20 @@
  * @openapi
  * /iam/api/staff/permissions:
  *   get:
- *     summary: List available employee permissions (admin only)
+ *     summary: List available employee permissions
  *     tags: [IAM Employee]
  *     security:
  *       - bearerAuth: []
  *     responses:
  *       200:
  *         description: Employee permissions catalog fetched
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/EmployeePermissionsCatalogResponse'
  */
 
 /**
  * @openapi
  * /iam/api/staff/{id}/permissions/add:
  *   patch:
- *     summary: Add permissions to employee (admin only)
+ *     summary: Add permissions to employee
  *     tags: [IAM Employee]
  *     security:
  *       - bearerAuth: []
@@ -504,17 +474,13 @@
  *     responses:
  *       200:
  *         description: Employee permissions updated
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/EmployeePermissionsResponse'
  */
 
 /**
  * @openapi
  * /iam/api/staff/{id}/permissions/remove:
  *   patch:
- *     summary: Remove permissions from employee (admin only)
+ *     summary: Remove permissions from employee
  *     tags: [IAM Employee]
  *     security:
  *       - bearerAuth: []
@@ -533,10 +499,6 @@
  *     responses:
  *       200:
  *         description: Employee permissions updated
- *         content:
- *           application/json:
- *             schema:
- *               $ref: '#/components/schemas/EmployeePermissionsResponse'
  */
 
 /**
@@ -630,22 +592,6 @@
  *   get:
  *     summary: List products
  *     tags: [Catalog Product]
- *     parameters:
- *       - in: query
- *         name: search
- *         schema:
- *           type: string
- *         description: Search by name or tags (e.g., "Galaxy")
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *         example: 1
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
- *         example: 20
  *     responses:
  *       200:
  *         description: Products fetched
@@ -666,13 +612,8 @@
  *     responses:
  *       200:
  *         description: Product fetched
- */
-
-/**
- * @openapi
- * /product-catalog/products/{id}:
  *   delete:
- *     summary: Delete product (soft delete)
+ *     summary: Delete product
  *     tags: [Catalog Product]
  *     security:
  *       - bearerAuth: []
@@ -685,6 +626,109 @@
  *     responses:
  *       200:
  *         description: Product deleted
+ */
+
+/**
+ * @openapi
+ * /shift/branches:
+ *   post:
+ *     summary: Create branch
+ *     tags: [Shift Branch]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateBranchRequest'
+ *     responses:
+ *       201:
+ *         description: Branch created
+ *   get:
+ *     summary: List branches
+ *     tags: [Shift Branch]
+ *     security:
+ *       - bearerAuth: []
+ *     responses:
+ *       200:
+ *         description: Branches fetched
+ */
+
+/**
+ * @openapi
+ * /shift/branches/{id}:
+ *   get:
+ *     summary: Get branch by id
+ *     tags: [Shift Branch]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Branch fetched
+ */
+
+/**
+ * @openapi
+ * /shift/drawers:
+ *   post:
+ *     summary: Create drawer
+ *     tags: [Shift Branch]
+ *     security:
+ *       - bearerAuth: []
+ *     requestBody:
+ *       required: true
+ *       content:
+ *         application/json:
+ *           schema:
+ *             $ref: '#/components/schemas/CreateDrawerRequest'
+ *     responses:
+ *       201:
+ *         description: Drawer created
+ */
+
+/**
+ * @openapi
+ * /shift/drawers/branch/{branchId}:
+ *   get:
+ *     summary: List drawers for a branch
+ *     tags: [Shift Branch]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: branchId
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Drawers fetched
+ */
+
+/**
+ * @openapi
+ * /shift/drawers/{id}:
+ *   get:
+ *     summary: Get drawer by id
+ *     tags: [Shift Branch]
+ *     security:
+ *       - bearerAuth: []
+ *     parameters:
+ *       - in: path
+ *         name: id
+ *         required: true
+ *         schema:
+ *           type: string
+ *     responses:
+ *       200:
+ *         description: Drawer fetched
  */
 
 /**
@@ -745,6 +789,10 @@
  *         schema:
  *           type: string
  *       - in: query
+ *         name: drawerName
+ *         schema:
+ *           type: string
+ *       - in: query
  *         name: openedBy
  *         schema:
  *           type: string
@@ -767,18 +815,14 @@
  *         schema:
  *           type: string
  *       - in: query
+ *         name: drawerName
+ *         schema:
+ *           type: string
+ *       - in: query
  *         name: status
  *         schema:
  *           type: string
  *           enum: [open, closed]
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
  *     responses:
  *       200:
  *         description: Shift list fetched
@@ -820,11 +864,6 @@
  *     responses:
  *       201:
  *         description: Cash movement created
- */
-
-/**
- * @openapi
- * /shift/cash-movements:
  *   get:
  *     summary: List cash movements for a shift
  *     tags: [Shift Cash]
@@ -836,14 +875,6 @@
  *         required: true
  *         schema:
  *           type: string
- *       - in: query
- *         name: page
- *         schema:
- *           type: integer
- *       - in: query
- *         name: limit
- *         schema:
- *           type: integer
  *     responses:
  *       200:
  *         description: Cash movements fetched
