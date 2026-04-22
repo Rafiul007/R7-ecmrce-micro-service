@@ -10,7 +10,7 @@ function requireEnv(name: string): string {
 export const services = {
   iam: requireEnv('IAM_SERVICE_URL'),
   'product-catalog': requireEnv('PRODUCT_CATELOG_SERVICE_URL'),
-  shift: requireEnv('SHIFT_SERVICE_URL'),
+  // shift: requireEnv('SHIFT_SERVICE_URL'),
 };
 
 export default services;

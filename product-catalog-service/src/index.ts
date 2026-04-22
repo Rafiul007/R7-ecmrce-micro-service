@@ -1,6 +1,5 @@
 import express from 'express';
 import dotenv from 'dotenv';
-import cors from 'cors';
 import morgan from 'morgan';
 
 import { connectDB } from './config/db';
@@ -16,15 +15,6 @@ dotenv.config();
 connectDB();
 
 const app = express();
-
-app.use(
-  cors({
-    origin: '*',
-    methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
-    allowedHeaders: ['Content-Type', 'Authorization'],
-    credentials: true
-  })
-);
 
 app.use(morgan('dev'));
 app.use(express.json());
