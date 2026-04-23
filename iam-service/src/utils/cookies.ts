@@ -18,7 +18,9 @@ if (!['strict', 'lax', 'none'].includes(String(REFRESH_TOKEN_COOKIE_SAME_SITE)))
 }
 
 if (REFRESH_TOKEN_COOKIE_SAME_SITE === 'none' && !REFRESH_TOKEN_COOKIE_SECURE) {
-  throw new Error('REFRESH_TOKEN_COOKIE_SECURE must be true when REFRESH_TOKEN_COOKIE_SAME_SITE is none');
+  throw new Error(
+    'REFRESH_TOKEN_COOKIE_SECURE must be true when REFRESH_TOKEN_COOKIE_SAME_SITE is none'
+  );
 }
 
 const parseCookieHeader = (cookieHeader?: string): Record<string, string> => {

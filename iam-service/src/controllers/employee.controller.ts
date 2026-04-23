@@ -294,8 +294,8 @@ export const removeEmployeePermissions = asyncHandler(async (req: AuthRequest, r
 
   assertValidPermissions(permissions);
 
-  const baseSet = new Set(BASE_EMPLOYEE_PERMISSIONS);
-  const removingBase = permissions.filter((permission) => baseSet.has(permission as any));
+  const baseSet = new Set<string>(BASE_EMPLOYEE_PERMISSIONS);
+  const removingBase = permissions.filter((permission) => baseSet.has(permission));
   if (removingBase.length) {
     throw new AppError(`Base permissions cannot be removed: ${removingBase.join(', ')}`, 400);
   }

@@ -8,5 +8,5 @@
     "esModuleInterop": true
   },
   "include": ["src/**/*.ts", "src/**/*.d.ts"],
-  "exclude": ["node_modules", "dist", "jest.config.ts"]
+  "exclude": ["node_modules", "dist", "jest.config.ts", "src/**/__tests__/**"]
 }
