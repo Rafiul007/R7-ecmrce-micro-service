@@ -1,10 +1,19 @@
 import swaggerJsDoc from 'swagger-jsdoc';
 import swaggerUi from 'swagger-ui-express';
-import { Express } from 'express';
+import { Express, Request } from 'express';
+
+const getBaseUrl = (req: Request) => {
+  const forwardedProto = req.get('x-forwarded-proto')?.split(',')[0]?.trim();
+  const forwardedHost = req.get('x-forwarded-host')?.split(',')[0]?.trim();
+  const forwardedPrefix = req.get('x-forwarded-prefix')?.trim().replace(/\/$/, '');
+
+  const protocol = forwardedProto || req.protocol;
+  const host = forwardedHost || req.get('host');
+
+  return `${protocol}://${host}${forwardedPrefix || ''}`;
+};
 
 export const setupSwagger = (app: Express) => {
-  const port = process.env.PORT || 3000;
-
   const options: swaggerJsDoc.Options = {
     definition: {
       openapi: '3.0.0',
@@ -15,7 +24,7 @@ export const setupSwagger = (app: Express) => {
       },
       servers: [
         {
-          url: process.env.SWAGGER_SERVER_URL || `http://localhost:${port}`,
+          url: '/',
           description: 'IAM Service'
         }
       ],
@@ -35,7 +44,27 @@ export const setupSwagger = (app: Express) => {
 
   const swaggerSpec = swaggerJsDoc(options);
 
-  app.use('/api-docs', swaggerUi.serve, swaggerUi.setup(swaggerSpec));
+  app.get('/api-docs/swagger.json', (req, res) => {
+    res.json({
+      ...swaggerSpec,
+      servers: [
+        {
+          url: getBaseUrl(req),
+          description: 'IAM Service'
+        }
+      ]
+    });
+  });
 
-  console.log(`📘 Swagger docs available at → http://localhost:${port}/api-docs`);
+  app.use(
+    '/api-docs',
+    swaggerUi.serve,
+    swaggerUi.setup(null, {
+      swaggerOptions: {
+        url: '/api-docs/swagger.json'
+      }
+    })
+  );
+
+  console.log('📘 Swagger docs available at → /api-docs');
 };

@@ -13,9 +13,11 @@
   },
   "scripts": {
     "prepare": "husky",
-    "dev": "yarn workspaces foreach --parallel --topological-dev run dev",
-    "build": "yarn workspaces foreach --topological run build",
-    "start": "yarn workspaces foreach --parallel --topological run start",
+    "dev": "yarn dev:all",
+    "build": "yarn workspaces run build",
+    "start": "yarn start:all",
+    "build:gateway": "yarn workspace gateway build",
+    "start:gateway": "yarn workspace gateway start",
 
     "dev:all": "concurrently -n iam,product,shift,gateway -c auto \"yarn workspace iam-service dev\" \"yarn workspace product-catalog-service dev\" \"yarn workspace shift-service dev\" \"yarn workspace gateway dev\"",
     "start:all": "concurrently -n iam,product,shift,gateway -c auto \"yarn workspace iam-service start\" \"yarn workspace product-catalog-service start\" \"yarn workspace shift-service start\" \"yarn workspace gateway start\"",
